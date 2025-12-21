@@ -1,4 +1,155 @@
 import { useMemo, useState } from "react";
+const BRAND = {
+  bg: "#567A96",        // achtergrond (blauw/grijs)
+  accent: "#F5C400",    // EGM-geel
+  text: "#1F2A33",
+  muted: "#5F6B76",
+  border: "rgba(31,42,51,0.12)",
+};
+
+const styles = {
+  page: {
+    minHeight: "100vh",
+    background: BRAND.bg,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
+    fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial',
+  },
+  card: {
+    width: "100%",
+    maxWidth: 560,
+    background: "#fff",
+    borderRadius: 18,
+    boxShadow: "0 18px 50px rgba(0,0,0,0.22)",
+    border: `1px solid ${BRAND.border}`,
+    overflow: "hidden",
+  },
+  cardInner: {
+    padding: 22,
+  },
+  brandRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: 14,
+    marginBottom: 14,
+  },
+  logo: {
+    width: 56,
+    height: 56,
+    borderRadius: 14,
+    background: "rgba(245,196,0,0.15)",
+    border: `2px solid ${BRAND.accent}`,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: 900,
+    color: BRAND.text,
+    letterSpacing: 1,
+    userSelect: "none",
+  },
+  title: {
+    margin: 0,
+    fontSize: 26,
+    lineHeight: 1.1,
+    color: BRAND.text,
+  },
+  subtitle: {
+    margin: "6px 0 0 0",
+    color: BRAND.muted,
+    fontSize: 14,
+    lineHeight: 1.4,
+  },
+  divider: {
+    height: 1,
+    background: `linear-gradient(90deg, transparent, ${BRAND.border}, transparent)`,
+    margin: "14px 0 18px 0",
+  },
+  grid2: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: 12,
+    marginTop: 14,
+  },
+  label: {
+    display: "block",
+  },
+  labelTitle: {
+    fontWeight: 700,
+    fontSize: 13,
+    color: BRAND.text,
+    marginBottom: 6,
+  },
+  input: {
+    width: "100%",
+    padding: "12px 12px",
+    borderRadius: 12,
+    border: `1px solid ${BRAND.border}`,
+    outline: "none",
+    fontSize: 14,
+    background: "#fff",
+  },
+  textarea: {
+    width: "100%",
+    padding: "12px 12px",
+    borderRadius: 12,
+    border: `1px solid ${BRAND.border}`,
+    outline: "none",
+    fontSize: 14,
+    background: "#fff",
+    minHeight: 110,
+    resize: "vertical",
+  },
+  section: {
+    marginTop: 16,
+    padding: 14,
+    borderRadius: 14,
+    border: `1px solid ${BRAND.border}`,
+    background: "rgba(86,122,150,0.06)",
+  },
+  sectionTitle: {
+    fontWeight: 800,
+    marginBottom: 10,
+    color: BRAND.text,
+  },
+  checkboxRow: {
+    display: "flex",
+    gap: 10,
+    alignItems: "flex-start",
+    marginBottom: 10,
+  },
+  checkboxText: {
+    color: BRAND.text,
+    fontSize: 14,
+    lineHeight: 1.35,
+  },
+  small: {
+    color: BRAND.muted,
+    fontSize: 12,
+    marginTop: 2,
+  },
+  button: {
+    marginTop: 18,
+    width: "100%",
+    padding: "14px 16px",
+    borderRadius: 14,
+    border: "none",
+    background: BRAND.accent,
+    color: "#1b1b1b",
+    fontWeight: 900,
+    fontSize: 15,
+    cursor: "pointer",
+    boxShadow: "0 10px 22px rgba(245,196,0,0.35)",
+  },
+  footnote: {
+    marginTop: 10,
+    color: "rgba(255,255,255,0.8)",
+    fontSize: 12,
+    textAlign: "center",
+  },
+};
+
 const PLAYLISTS = [
   { name: "EGM - El Grande Discovery Channel", id: "1e7cbv7cz2mKiaXPcexn9w" },
   // voeg later meer toe...
