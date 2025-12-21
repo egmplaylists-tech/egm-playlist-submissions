@@ -116,13 +116,25 @@ export default function Submit() {
   </label>
 </div>
 
-        </label>
-        <label style={{display:"block"}}>
-          <div style={{fontWeight: 600}}>Instagram (optioneel)</div>
-          <input value={instagram} onChange={e=>setInstagram(e.target.value)} placeholder="@..."
-                 style={{width:"100%", padding:10, border:"1px solid #ddd", borderRadius:10}}/>
-        </label>
-      </div>
+<label style={{display:"block"}}>
+  <div style={{fontWeight: 600}}>Playlist</div>
+
+  <select
+    value={playlistId}
+    onChange={(e) => {
+      const selected = PLAYLISTS.find((p) => p.id === e.target.value);
+      setPlaylistId(e.target.value);
+      if (selected) setPlaylistName(selected.name);
+    }}
+    style={{width:"100%", padding:10, border:"1px solid #ddd", borderRadius:10}}
+  >
+    <option value="">Selecteer een playlist</option>
+    {PLAYLISTS.map((p) => (
+      <option key={p.id} value={p.id}>{p.name}</option>
+    ))}
+  </select>
+</label>
+
 
       <label style={{display:"block", marginTop: 12}}>
         <div style={{fontWeight: 600}}>Email (optioneel)</div>
