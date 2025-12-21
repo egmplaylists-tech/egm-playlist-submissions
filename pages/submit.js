@@ -4,6 +4,14 @@ import { useMemo, useState } from "react";
 const PLAYLISTS = [
   { name: "EGM - El Grande Discovery Channel", id: "1e7cbv7cz2mKiaXPcexn9w" },
   // Voeg hier meer playlists toe:
+  // { name: "Naam 2", id: "SPOTIFY_PLAYLIST_ID" },
+];
+
+// ✅ Playlists die mensen mogen kiezen (naam + playlistId)
+// playlistId = het stuk uit je Spotify playlist link: /playlist/<DIT_STUK>
+const PLAYLISTS = [
+  { name: "EGM - El Grande Discovery Channel", id: "1e7cbv7cz2mKiaXPcexn9w" },
+  // Voeg hier meer playlists toe:
   // { name: "El Grande Discovery Channel", id: "1e7cbv7cz2mKiaXPcexn9w" },
 ];
 
@@ -35,11 +43,24 @@ export default function Submit() {
   }, []);
 
   async function startSpotify() {
-    // Persist draft in localStorage so we can continue after OAuth
-    const draft = { playlistId, playlistName, trackUrl, artistName, email, instagram, pitch,
-      consentFollowCurator, consentFollowPlaylist, consentSaveTrack, consentPresave
-    };
-    localStorage.setItem('egm_submission_draft', JSON.stringify(draft));
+   <label style={{display:"block"}}>
+  <div style={{fontWeight: 600}}>Playlist</div>
+
+  <select
+    value={playlistId}
+    onChange={(e) => {
+      const selected = PLAYLISTS.find(p => p.id === e.target.value);
+      setPlaylistId(e.target.value);
+      if (selected) setPlaylistName(selected.name);
+    }}
+    style={{width:"100%", padding:10, border:"1px solid #ddd", borderRadius:10}}
+  >
+    <option value="">Selecteer een playlist</option>
+    {PLAYLISTS.map(p => (
+      <option key={p.id} value={p.id}>{p.name}</option>
+    ))}
+  </select>
+</label>
 
     const res = await fetch('/api/auth/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({}) });
     const data = await res.json();
