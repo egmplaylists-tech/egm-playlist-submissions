@@ -1,4 +1,11 @@
 import { useMemo, useState } from "react";
+// ✅ Playlists die mensen mogen kiezen (naam + playlistId)
+// playlistId = het stuk uit je Spotify playlist link: /playlist/<DIT_STUK>
+const PLAYLISTS = [
+  { name: "EGM - El Grande Discovery Channel", id: "1e7cbv7cz2mKiaXPcexn9w" },
+  // Voeg hier meer playlists toe:
+  // { name: "El Grande Discovery Channel", id: "1e7cbv7cz2mKiaXPcexn9w" },
+];
 
 function getQueryParam(name) {
   if (typeof window === 'undefined') return '';
@@ -47,10 +54,25 @@ export default function Submit() {
 
       <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap: 12, marginTop: 18}}>
         <label style={{display:"block"}}>
-          <div style={{fontWeight: 600}}>Playlist ID (Spotify)</div>
-          <input value={playlistId} onChange={e=>setPlaylistId(e.target.value)} placeholder="bijv. 0S1B6CXPJL5relnJ8IbGqM"
-                 style={{width:"100%", padding:10, border:"1px solid #ddd", borderRadius:10}}/>
-        </label>
+<label style={{display:"block"}}>
+  <div style={{fontWeight: 600}}>Playlist</div>
+
+  <select
+    value={playlistId}
+    onChange={(e) => {
+      const selected = PLAYLISTS.find(p => p.id === e.target.value);
+      setPlaylistId(e.target.value);
+      if (selected) setPlaylistName(selected.name);
+    }}
+    style={{width:"100%", padding:10, border:"1px solid #ddd", borderRadius:10}}
+  >
+    <option value="">Selecteer een playlist</option>
+    {PLAYLISTS.map(p => (
+      <option key={p.id} value={p.id}>{p.name}</option>
+    ))}
+  </select>
+</label>
+
         <label style={{display:"block"}}>
           <div style={{fontWeight: 600}}>Playlist naam (optioneel)</div>
           <input value={playlistName} onChange={e=>setPlaylistName(e.target.value)} placeholder="bijv. UK Heat Index"
