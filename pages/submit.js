@@ -4,7 +4,6 @@ const PLAYLISTS = [
   // voeg later meer toe...
 ];
 
-
 // ✅ Playlists die mensen mogen kiezen (naam + playlistId)
 // playlistId = het stuk uit je Spotify playlist link: /playlist/<DIT_STUK>
 const PLAYLISTS = [
