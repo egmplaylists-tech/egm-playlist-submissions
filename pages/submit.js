@@ -88,10 +88,6 @@ export default function Submit() {
       }}
       style={{width:"100%", padding:10, border:"1px solid #ddd", borderRadius:10}}
     >
-      <option value="">Selecteer een playlist</option>
-      {PLAYLISTS.map((p) => (
-        <option key={p.id} value={p.id}>{p.name}</option>
-      ))}
     </select>
   </label>
 
