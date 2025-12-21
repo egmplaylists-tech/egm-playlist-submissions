@@ -43,16 +43,6 @@ export default function Submit() {
   async function startSpotify() {
    <label style={{display:"block"}}>
   <div style={{fontWeight: 600}}>Playlist</div>
-
-  <select
-    value={playlistId}
-    onChange={(e) => {
-      const selected = PLAYLISTS.find(p => p.id === e.target.value);
-      setPlaylistId(e.target.value);
-      if (selected) setPlaylistName(selected.name);
-    }}
-    style={{width:"100%", padding:10, border:"1px solid #ddd", borderRadius:10}}
-  >
    <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginTop:18}}>
 
   <label style={{display:"block"}}>
