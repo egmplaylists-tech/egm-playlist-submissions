@@ -1,4 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+
+/** ====== BRAND / STYLING ====== */
 const BRAND = {
   bg: "#567A96",        // achtergrond (blauw/grijs)
   accent: "#F5C400",    // EGM-geel
@@ -19,23 +21,21 @@ const styles = {
   },
   card: {
     width: "100%",
-    maxWidth: 560,
+    maxWidth: 620,
     background: "#fff",
     borderRadius: 18,
     boxShadow: "0 18px 50px rgba(0,0,0,0.22)",
     border: `1px solid ${BRAND.border}`,
     overflow: "hidden",
   },
-  cardInner: {
-    padding: 22,
-  },
+  cardInner: { padding: 22 },
   brandRow: {
     display: "flex",
     alignItems: "center",
     gap: 14,
     marginBottom: 14,
   },
-  logo: {
+  logoBox: {
     width: 56,
     height: 56,
     borderRadius: 14,
@@ -72,9 +72,7 @@ const styles = {
     gap: 12,
     marginTop: 14,
   },
-  label: {
-    display: "block",
-  },
+  label: { display: "block" },
   labelTitle: {
     fontWeight: 700,
     fontSize: 13,
@@ -119,16 +117,8 @@ const styles = {
     alignItems: "flex-start",
     marginBottom: 10,
   },
-  checkboxText: {
-    color: BRAND.text,
-    fontSize: 14,
-    lineHeight: 1.35,
-  },
-  small: {
-    color: BRAND.muted,
-    fontSize: 12,
-    marginTop: 2,
-  },
+  checkboxText: { color: BRAND.text, fontSize: 14, lineHeight: 1.35 },
+  small: { color: BRAND.muted, fontSize: 12, marginTop: 2 },
   button: {
     marginTop: 18,
     width: "100%",
@@ -142,191 +132,321 @@ const styles = {
     cursor: "pointer",
     boxShadow: "0 10px 22px rgba(245,196,0,0.35)",
   },
+  buttonDisabled: {
+    opacity: 0.65,
+    cursor: "not-allowed",
+  },
+  errorBox: {
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 12,
+    border: "1px solid rgba(220,38,38,0.35)",
+    background: "rgba(220,38,38,0.06)",
+    color: "#991b1b",
+    fontSize: 13,
+  },
   footnote: {
     marginTop: 10,
-    color: "rgba(255,255,255,0.8)",
+    color: "rgba(255,255,255,0.85)",
     fontSize: 12,
     textAlign: "center",
   },
 };
 
-const PLAYLISTS = [
-  { name: "EGM - El Grande Discovery Channel", id: "1e7cbv7cz2mKiaXPcexn9w" },
-  // voeg later meer toe...
-];
-
-// ✅ Playlists die mensen mogen kiezen (naam + playlistId)
-// playlistId = het stuk uit je Spotify playlist link: /playlist/<DIT_STUK>
+/** ====== PLAYLISTS (dropdown) ====== */
 const PLAYLISTS = [
   { name: "EGM - El Grande Discovery Channel", id: "1e7cbv7cz2mKiaXPcexn9w" },
   // Voeg hier meer playlists toe:
-  // { name: "El Grande Discovery Channel", id: "1e7cbv7cz2mKiaXPcexn9w" },
+  // { name: "EGM - ...", id: "SPOTIFY_PLAYLIST_ID" },
 ];
 
+/** ====== URL helper ====== */
 function getQueryParam(name) {
-  if (typeof window === 'undefined') return '';
+  if (typeof window === "undefined") return "";
   const url = new URL(window.location.href);
-  return url.searchParams.get(name) || '';
+  return url.searchParams.get(name) || "";
 }
 
 export default function Submit() {
-  const [playlistId, setPlaylistId] = useState('');
-  const [playlistName, setPlaylistName] = useState('');
-  const [trackUrl, setTrackUrl] = useState('');
-  const [artistName, setArtistName] = useState('');
-  const [email, setEmail] = useState('');
-  const [instagram, setInstagram] = useState('');
-  const [pitch, setPitch] = useState('');
+  // form fields
+  const [playlistId, setPlaylistId] = useState("");
+  const [playlistName, setPlaylistName] = useState("");
+  const [trackUrl, setTrackUrl] = useState("");
+  const [artistName, setArtistName] = useState("");
+  const [email, setEmail] = useState("");
+  const [instagram, setInstagram] = useState("");
+  const [pitch, setPitch] = useState("");
+
+  // gates
   const [consentFollowCurator, setConsentFollowCurator] = useState(true);
   const [consentFollowPlaylist, setConsentFollowPlaylist] = useState(true);
   const [consentSaveTrack, setConsentSaveTrack] = useState(true);
   const [consentPresave, setConsentPresave] = useState(false);
 
-  useMemo(() => {
-    if (typeof window === 'undefined') return;
-    const pid = getQueryParam('playlistId');
-    const pname = getQueryParam('playlistName');
+  // ui
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  // Optional: use real logo file from /public/logo.png
+  const useRealLogo = false;
+
+  // Pre-fill from URL (works when you link to /submit?playlistId=...&playlistName=...)
+  useEffect(() => {
+    const pid = getQueryParam("playlistId");
+    const pname = getQueryParam("playlistName");
     if (pid) setPlaylistId(pid);
     if (pname) setPlaylistName(pname);
   }, []);
 
+  // Keep playlistName synced with dropdown choice (if user picks from list)
+  useMemo(() => {
+    if (!playlistId) return;
+    const selected = PLAYLISTS.find((p) => p.id === playlistId);
+    if (selected) setPlaylistName(selected.name);
+  }, [playlistId]);
+
   async function startSpotify() {
-   <label style={{display:"block"}}>
-  <div style={{fontWeight: 600}}>Playlist</div>
-   <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginTop:18}}>
+    setError("");
 
-  <label style={{display:"block"}}>
-    <div style={{fontWeight:600}}>Playlist</div>
-    <select
-      value={playlistId}
-      onChange={(e) => {
-        const selected = PLAYLISTS.find(p => p.id === e.target.value);
-        setPlaylistId(e.target.value);
-        if (selected) setPlaylistName(selected.name);
-      }}
-      style={{width:"100%", padding:10, border:"1px solid #ddd", borderRadius:10}}
-    >
-      <option value="">Selecteer een playlist</option>
-      {PLAYLISTS.map(p => (
-        <option key={p.id} value={p.id}>{p.name}</option>
-      ))}
-    </select>
-  </label>
+    if (!playlistId) {
+      setError("Kies eerst een playlist.");
+      return;
+    }
+    if (!trackUrl || !trackUrl.includes("open.spotify.com/track/")) {
+      setError("Vul een geldige Spotify track link in (open.spotify.com/track/...).");
+      return;
+    }
 
-  <label style={{display:"block"}}>
-    <div style={{fontWeight:600}}>Playlist naam (optioneel)</div>
-    <input
-      value={playlistName}
-      onChange={e => setPlaylistName(e.target.value)}
-      placeholder="bijv. UK Heat Index"
-      style={{width:"100%", padding:10, border:"1px solid #ddd", borderRadius:10}}
-    />
-  </label>
+    try {
+      setBusy(true);
 
-</div>
+      // Store draft locally (used by /api/auth/callback -> /api/submit/finalize pattern in your project)
+      const draft = {
+        playlist_id: playlistId,
+        playlist_name: playlistName,
+        submitted_track_url: trackUrl,
+        artist_name: artistName,
+        email,
+        instagram,
+        pitch,
+        gates: {
+          follow_playlist: !!consentFollowPlaylist,
+          follow_curator: !!consentFollowCurator,
+          save_track: !!consentSaveTrack,
+          presave: !!consentPresave,
+        },
+      };
+      localStorage.setItem("egm_submission_draft", JSON.stringify(draft));
 
-      <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap: 12, marginTop: 18}}>
-  <label style={{display:"block"}}>
-    <div style={{fontWeight: 600}}>Playlist</div>
+      // Kick off Spotify OAuth
+      const res = await fetch("/api/auth/login", { method: "GET" });
+      const data = await res.json();
 
-    <select
-      value={playlistId}
-      onChange={(e) => {
-        const selected = PLAYLISTS.find((p) => p.id === e.target.value);
-        setPlaylistId(e.target.value);
-        if (selected) setPlaylistName(selected.name);
-      }}
-      style={{width:"100%", padding:10, border:"1px solid #ddd", borderRadius:10}}
-    >
-    </select>
-  </label>
+      if (!res.ok || !data?.url) {
+        throw new Error(data?.error || "Kon Spotify login niet starten.");
+      }
 
-  <label style={{display:"block"}}>
-    <div style={{fontWeight: 600}}>Playlist naam (optioneel)</div>
-    <input
-      value={playlistName}
-      onChange={(e)=>setPlaylistName(e.target.value)}
-      placeholder="bv. UK Heat Index"
-      style={{width:"100%", padding:10, border:"1px solid #ddd", borderRadius:10}}
-    />
-  </label>
-</div>
+      window.location.href = data.url;
+    } catch (e) {
+      setError(e?.message || "Er ging iets mis.");
+      setBusy(false);
+    }
+  }
 
-<label style={{display:"block"}}>
-  <div style={{fontWeight: 600}}>Playlist</div>
+  return (
+    <main style={styles.page}>
+      <div style={styles.card}>
+        <div style={styles.cardInner}>
+          <div style={styles.brandRow}>
+            {useRealLogo ? (
+              <img
+                src="/logo.png"
+                alt="EGM Playlists"
+                style={{ width: 56, height: 56, borderRadius: 14 }}
+              />
+            ) : (
+              <div style={styles.logoBox}>EGM</div>
+            )}
 
-  <select
-    value={playlistId}
-    onChange={(e) => {
-      const selected = PLAYLISTS.find((p) => p.id === e.target.value);
-      setPlaylistId(e.target.value);
-      if (selected) setPlaylistName(selected.name);
-    }}
-    style={{width:"100%", padding:10, border:"1px solid #ddd", borderRadius:10}}
-  >
-    <option value="">Selecteer een playlist</option>
-    {PLAYLISTS.map((p) => (
-      <option key={p.id} value={p.id}>{p.name}</option>
-    ))}
-  </select>
-</label>
-
-
-      <label style={{display:"block", marginTop: 12}}>
-        <div style={{fontWeight: 600}}>Email (optioneel)</div>
-        <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="name@email.com"
-               style={{width:"100%", padding:10, border:"1px solid #ddd", borderRadius:10}}/>
-      </label>
-
-      <label style={{display:"block", marginTop: 12}}>
-        <div style={{fontWeight: 600}}>Pitch (optioneel)</div>
-        <textarea value={pitch} onChange={e=>setPitch(e.target.value)} rows={5}
-                  style={{width:"100%", padding:10, border:"1px solid #ddd", borderRadius:10}}/>
-      </label>
-
-      <div style={{marginTop: 18, padding: 14, border:"1px solid #eee", borderRadius: 12}}>
-        <div style={{fontWeight: 700, marginBottom: 8}}>Spotify actions (gates)</div>
-
-        <label style={{display:"flex", gap: 10, alignItems:"flex-start", marginBottom: 8}}>
-          <input type="checkbox" checked={consentFollowPlaylist} onChange={e=>setConsentFollowPlaylist(e.target.checked)} />
-          <div>
-            <div style={{fontWeight: 600}}>Follow gekozen playlist</div>
-            <div style={{opacity: .75, fontSize: 13}}>Je volgt de playlist waarvoor je indient.</div>
+            <div>
+              <h1 style={styles.title}>EGM Playlists — Submit</h1>
+              <p style={styles.subtitle}>
+                Real support for your music. Submit your track and connect with Spotify.
+              </p>
+            </div>
           </div>
-        </label>
 
-        <label style={{display:"flex", gap: 10, alignItems:"flex-start", marginBottom: 8}}>
-          <input type="checkbox" checked={consentFollowCurator} onChange={e=>setConsentFollowCurator(e.target.checked)} />
-          <div>
-            <div style={{fontWeight: 600}}>Follow curator profiel</div>
-            <div style={{opacity: .75, fontSize: 13}}>Je volgt de curator op Spotify.</div>
-          </div>
-        </label>
+          <div style={styles.divider} />
 
-        <label style={{display:"flex", gap: 10, alignItems:"flex-start", marginBottom: 8}}>
-          <input type="checkbox" checked={consentSaveTrack} onChange={e=>setConsentSaveTrack(e.target.checked)} />
-          <div>
-            <div style={{fontWeight: 600}}>Save curator track</div>
-            <div style={{opacity: .75, fontSize: 13}}>Je slaat een curator track op in je library.</div>
-          </div>
-        </label>
+          {error ? <div style={styles.errorBox}>{error}</div> : null}
 
-        <label style={{display:"flex", gap: 10, alignItems:"flex-start"}}>
-          <input type="checkbox" checked={consentPresave} onChange={e=>setConsentPresave(e.target.checked)} />
-          <div>
-            <div style={{fontWeight: 600}}>Pre-save upcoming release</div>
-            <div style={{opacity: .75, fontSize: 13}}>Alleen als er een upcoming release is ingesteld.</div>
+          {/* Playlist dropdown + optional name */}
+          <div style={styles.grid2}>
+            <label style={styles.label}>
+              <div style={styles.labelTitle}>Playlist</div>
+              <select
+                value={playlistId}
+                onChange={(e) => setPlaylistId(e.target.value)}
+                style={styles.input}
+              >
+                <option value="">Selecteer een playlist</option>
+                {PLAYLISTS.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label style={styles.label}>
+              <div style={styles.labelTitle}>Playlist naam (optioneel)</div>
+              <input
+                value={playlistName}
+                onChange={(e) => setPlaylistName(e.target.value)}
+                placeholder="wordt automatisch ingevuld"
+                style={styles.input}
+              />
+            </label>
           </div>
-        </label>
+
+          <label style={{ ...styles.label, marginTop: 12 }}>
+            <div style={styles.labelTitle}>Track link (Spotify)</div>
+            <input
+              value={trackUrl}
+              onChange={(e) => setTrackUrl(e.target.value)}
+              placeholder="https://open.spotify.com/track/..."
+              style={styles.input}
+            />
+          </label>
+
+          <div style={styles.grid2}>
+            <label style={styles.label}>
+              <div style={styles.labelTitle}>Artist name (optioneel)</div>
+              <input
+                value={artistName}
+                onChange={(e) => setArtistName(e.target.value)}
+                placeholder="Artist name"
+                style={styles.input}
+              />
+            </label>
+
+            <label style={styles.label}>
+              <div style={styles.labelTitle}>Instagram (optioneel)</div>
+              <input
+                value={instagram}
+                onChange={(e) => setInstagram(e.target.value)}
+                placeholder="@..."
+                style={styles.input}
+              />
+            </label>
+          </div>
+
+          <label style={{ ...styles.label, marginTop: 12 }}>
+            <div style={styles.labelTitle}>Email (optioneel)</div>
+            <input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="name@email.com"
+              style={styles.input}
+            />
+          </label>
+
+          <label style={{ ...styles.label, marginTop: 12 }}>
+            <div style={styles.labelTitle}>Pitch (optioneel)</div>
+            <textarea
+              value={pitch}
+              onChange={(e) => setPitch(e.target.value)}
+              placeholder="Vertel kort waarom deze track past..."
+              style={styles.textarea}
+            />
+          </label>
+
+          {/* Gates */}
+          <div style={styles.section}>
+            <div style={styles.sectionTitle}>Spotify actions (gates)</div>
+
+            <label style={styles.checkboxRow}>
+              <input
+                type="checkbox"
+                checked={consentFollowPlaylist}
+                onChange={(e) => setConsentFollowPlaylist(e.target.checked)}
+                style={{ marginTop: 3 }}
+              />
+              <div>
+                <div style={styles.checkboxText}>
+                  <b>Follow gekozen playlist</b>
+                </div>
+                <div style={styles.small}>Je volgt de playlist waarvoor je indient.</div>
+              </div>
+            </label>
+
+            <label style={styles.checkboxRow}>
+              <input
+                type="checkbox"
+                checked={consentFollowCurator}
+                onChange={(e) => setConsentFollowCurator(e.target.checked)}
+                style={{ marginTop: 3 }}
+              />
+              <div>
+                <div style={styles.checkboxText}>
+                  <b>Follow curator profiel</b>
+                </div>
+                <div style={styles.small}>Je volgt de curator op Spotify.</div>
+              </div>
+            </label>
+
+            <label style={styles.checkboxRow}>
+              <input
+                type="checkbox"
+                checked={consentSaveTrack}
+                onChange={(e) => setConsentSaveTrack(e.target.checked)}
+                style={{ marginTop: 3 }}
+              />
+              <div>
+                <div style={styles.checkboxText}>
+                  <b>Save curator track</b>
+                </div>
+                <div style={styles.small}>Je slaat een curator track op in je library.</div>
+              </div>
+            </label>
+
+            <label style={{ ...styles.checkboxRow, marginBottom: 0 }}>
+              <input
+                type="checkbox"
+                checked={consentPresave}
+                onChange={(e) => setConsentPresave(e.target.checked)}
+                style={{ marginTop: 3 }}
+              />
+              <div>
+                <div style={styles.checkboxText}>
+                  <b>Pre-save upcoming release</b>
+                </div>
+                <div style={styles.small}>Alleen als er een upcoming release is ingesteld.</div>
+              </div>
+            </label>
+          </div>
+
+          <button
+            onClick={startSpotify}
+            style={{
+              ...styles.button,
+              ...(busy ? styles.buttonDisabled : null),
+            }}
+            disabled={busy}
+          >
+            {busy ? "Connecting..." : "Connect with Spotify & Submit"}
+          </button>
+
+          <p style={{ marginTop: 12, color: BRAND.muted, fontSize: 13 }}>
+            Na Spotify login voeren we alleen de acties uit die je aangevinkt hebt.
+          </p>
+        </div>
       </div>
 
-      <button onClick={startSpotify} style={{marginTop: 18, padding:"12px 16px", borderRadius: 12, border:"1px solid #111", background:"#111", color:"#fff", fontWeight:700}}>
-        Connect with Spotify & Submit
-      </button>
-
-      <p style={{marginTop: 12, opacity: .7, fontSize: 13}}>
-        Na Spotify login voeren we alleen de acties uit die je aangevinkt hebt.
-      </p>
+      <div style={styles.footnote}>
+        © {new Date().getFullYear()} EGM Playlists — Real support for your music
+      </div>
     </main>
   );
 }
+
