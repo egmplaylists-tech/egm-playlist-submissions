@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 const BRAND = {
-  bg: "#567A96", // background (blue/grey)
+  bg: "#ff00ff", // background (blue/grey)
   accent: "#F5C400", // EGM yellow
   text: "#1F2A33",
   muted: "#5F6B76",
