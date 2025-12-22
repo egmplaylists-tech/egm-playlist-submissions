@@ -21,6 +21,16 @@ const styles = {
     fontFamily:
       'system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial',
   },
+
+  // ✅ NEW: center column that doesn't stretch full width
+  shell: {
+    width: "100%",
+    maxWidth: 760, // slightly wider than card so it stays centered with breathing room
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  },
+
   card: {
     width: "100%",
     maxWidth: 720,
@@ -31,6 +41,7 @@ const styles = {
     overflow: "hidden",
   },
   cardInner: { padding: 22 },
+
   brandRow: { display: "flex", alignItems: "center", gap: 14, marginBottom: 10 },
   logoImg: {
     width: 56,
@@ -42,14 +53,17 @@ const styles = {
   },
   title: { margin: 0, fontSize: 28, lineHeight: 1.1, color: BRAND.text },
   subtitle: { margin: "6px 0 0 0", color: BRAND.muted, fontSize: 14, lineHeight: 1.4 },
+
   divider: {
     height: 1,
     background: `linear-gradient(90deg, transparent, ${BRAND.border}, transparent)`,
     margin: "14px 0 18px 0",
   },
+
   grid2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 14 },
   label: { display: "block" },
   labelTitle: { fontWeight: 800, fontSize: 13, color: BRAND.text, marginBottom: 6 },
+
   input: {
     width: "100%",
     padding: "12px 12px",
@@ -70,6 +84,7 @@ const styles = {
     minHeight: 110,
     resize: "vertical",
   },
+
   section: {
     marginTop: 16,
     padding: 14,
@@ -78,9 +93,11 @@ const styles = {
     background: "rgba(86,122,150,0.06)",
   },
   sectionTitle: { fontWeight: 900, marginBottom: 10, color: BRAND.text },
+
   checkboxRow: { display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 10 },
   checkboxText: { color: BRAND.text, fontSize: 14, lineHeight: 1.35 },
   small: { color: BRAND.muted, fontSize: 12, marginTop: 2 },
+
   button: {
     marginTop: 18,
     width: "100%",
@@ -94,7 +111,15 @@ const styles = {
     cursor: "pointer",
     boxShadow: "0 10px 22px rgba(245,196,0,0.35)",
   },
-  footer: { marginTop: 12, color: "rgba(255,255,255,0.85)", fontSize: 12, textAlign: "center" },
+
+  // ✅ footer centered under card
+  footer: {
+    marginTop: 12,
+    color: "rgba(255,255,255,0.85)",
+    fontSize: 12,
+    textAlign: "center",
+    width: "100%",
+  },
 };
 
 const PLAYLISTS = [
@@ -141,7 +166,7 @@ export default function Submit() {
   const [instagram, setInstagram] = useState("");
   const [pitch, setPitch] = useState("");
 
-  // ✅ default: all gates checked
+  // default: all gates checked
   const [consentFollowCurator, setConsentFollowCurator] = useState(true);
   const [consentFollowPlaylist, setConsentFollowPlaylist] = useState(true);
   const [consentSaveTrack, setConsentSaveTrack] = useState(true);
@@ -156,7 +181,6 @@ export default function Submit() {
   }, []);
 
   async function startSpotify() {
-    // Save draft so the callback can continue after OAuth
     const draft = {
       playlistId,
       playlistName,
@@ -176,9 +200,7 @@ export default function Submit() {
       if (typeof window !== "undefined") {
         localStorage.setItem("egm_submission_draft", JSON.stringify(draft));
       }
-    } catch (e) {
-      // ignore
-    }
+    } catch (e) {}
 
     try {
       const res = await fetch("/api/auth/login", {
@@ -187,11 +209,8 @@ export default function Submit() {
         body: JSON.stringify({}),
       });
       const data = await res.json();
-      if (data?.url) {
-        window.location.href = data.url;
-      } else {
-        alert("Could not start Spotify login. Please try again.");
-      }
+      if (data?.url) window.location.href = data.url;
+      else alert("Could not start Spotify login. Please try again.");
     } catch (e) {
       alert("Could not start Spotify login. Please try again.");
     }
@@ -199,7 +218,7 @@ export default function Submit() {
 
   return (
     <div style={styles.page}>
-      <div style={{ width: "100%" }}>
+      <div style={styles.shell}>
         <div style={styles.card}>
           <div style={styles.cardInner}>
             <div style={styles.brandRow}>
@@ -357,7 +376,6 @@ export default function Submit() {
           </div>
         </div>
 
-        {/* footer under the card */}
         <div style={styles.footer}>
           © {new Date().getFullYear()} EGM Playlists — All rights reserved.
         </div>
@@ -365,4 +383,3 @@ export default function Submit() {
     </div>
   );
 }
-
