@@ -5,182 +5,13 @@ const BRAND = {
   accent: "#F5C400", // EGM yellow
   text: "#1F2A33",
   muted: "#5F6B76",
-  border: "rgba(31,42,51,0.12)",
+  border: "rgba(31,42,51,0.14)",
+  card: "#FFFFFF",
 };
 
 const LOGO_URL = "https://www.egmplaylists.eu/images/EGM%20LOGO%20001.jpg";
 
-const styles = {
-  page: {
-    minHeight: "100vh",
-    background: BRAND.bg,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 24,
-    fontFamily:
-      'system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial',
-  },
-  card: {
-    width: "100%",
-    maxWidth: 860,
-    background: "#fff",
-    borderRadius: 22,
-    boxShadow: "0 18px 50px rgba(0,0,0,0.22)",
-    border: `1px solid ${BRAND.border}`,
-    overflow: "hidden",
-  },
-  cardInner: {
-    padding: 22,
-  },
-  brandRow: {
-    display: "flex",
-    alignItems: "center",
-    gap: 14,
-    marginBottom: 14,
-  },
-  logoImgWrap: {
-    width: 56,
-    height: 56,
-    borderRadius: 14,
-    border: `2px solid ${BRAND.accent}`,
-    overflow: "hidden",
-    background: "rgba(245,196,0,0.12)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flex: "0 0 auto",
-  },
-  logoImg: {
-    width: "100%",
-    height: "100%",
-    objectFit: "cover",
-    display: "block",
-  },
-  title: {
-    margin: 0,
-    fontSize: 28,
-    lineHeight: 1.1,
-    color: BRAND.text,
-  },
-  subtitle: {
-    margin: "6px 0 0 0",
-    color: BRAND.muted,
-    fontSize: 14,
-    lineHeight: 1.4,
-  },
-  divider: {
-    height: 1,
-    background: `linear-gradient(90deg, transparent, ${BRAND.border}, transparent)`,
-    margin: "14px 0 18px 0",
-  },
-  grid2: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: 12,
-    marginTop: 14,
-  },
-  grid2Tight: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: 12,
-  },
-  label: {
-    display: "block",
-  },
-  labelTitle: {
-    fontWeight: 800,
-    fontSize: 13,
-    color: BRAND.text,
-    marginBottom: 6,
-  },
-  input: {
-    width: "100%",
-    padding: "12px 12px",
-    borderRadius: 12,
-    border: `1px solid ${BRAND.border}`,
-    outline: "none",
-    fontSize: 14,
-    background: "#fff",
-  },
-  textarea: {
-    width: "100%",
-    padding: "12px 12px",
-    borderRadius: 12,
-    border: `1px solid ${BRAND.border}`,
-    outline: "none",
-    fontSize: 14,
-    background: "#fff",
-    minHeight: 120,
-    resize: "vertical",
-  },
-  section: {
-    marginTop: 16,
-    padding: 14,
-    borderRadius: 14,
-    border: `1px solid ${BRAND.border}`,
-    background: "rgba(86,122,150,0.06)",
-  },
-  sectionTitle: {
-    fontWeight: 900,
-    marginBottom: 10,
-    color: BRAND.text,
-  },
-  checkboxRow: {
-    display: "flex",
-    gap: 10,
-    alignItems: "flex-start",
-    marginBottom: 10,
-  },
-  checkboxText: {
-    color: BRAND.text,
-    fontSize: 14,
-    lineHeight: 1.35,
-  },
-  small: {
-    color: BRAND.muted,
-    fontSize: 12,
-    marginTop: 2,
-  },
-  warning: {
-    marginTop: 12,
-    padding: 12,
-    borderRadius: 12,
-    border: "1px solid rgba(220, 60, 60, 0.35)",
-    background: "rgba(220, 60, 60, 0.07)",
-    color: BRAND.text,
-    fontSize: 13,
-    lineHeight: 1.35,
-  },
-  button: {
-    marginTop: 18,
-    width: "100%",
-    padding: "14px 16px",
-    borderRadius: 14,
-    border: "none",
-    background: BRAND.accent,
-    color: "#1b1b1b",
-    fontWeight: 900,
-    fontSize: 15,
-    cursor: "pointer",
-    boxShadow: "0 10px 22px rgba(245,196,0,0.35)",
-  },
-  footnote: {
-    marginTop: 12,
-    color: BRAND.muted,
-    fontSize: 12,
-    lineHeight: 1.4,
-  },
-  pageBottom: {
-    marginTop: 12,
-    color: "rgba(255,255,255,0.85)",
-    fontSize: 12,
-    textAlign: "center",
-  },
-};
-
-// ---- Fallback playlists (hardcoded) ----
-// (We’ll still try to load /api/public-config, but this always works.)
+// Local fallback so dropdown ALWAYS has items (even if config fetch fails)
 const FALLBACK_PLAYLISTS = [
   { name: "EGM - Discovery Channel", id: "1e7cbv7cz2mKiaXPcexn9w" },
   { name: "EGM - On the right track", id: "5DOj4e0AvGKjgQXC8FA4Wd" },
@@ -206,7 +37,7 @@ const FALLBACK_PLAYLISTS = [
   { name: "EGM - ROCK HOT LIST", id: "1cY8086WzcTlcTIcfvDC7C" },
   { name: "EGM - INDIE HOT LIST", id: "1red8yCovZUY1RdKvxqZDW" },
   { name: "EGM - RnB HOT LIST", id: "0S1B6CXPJL5relnJ8IbGqM" },
-  { name: "EGM - Discover pop releases here !", id: "1dSS3zG20MP0IhDupSKBPp" },
+  { name: "EGM - Discover pop releases here!", id: "1dSS3zG20MP0IhDupSKBPp" },
   { name: "EGM - RHYTHM of LOVE", id: "1QxQVfe6oE2xvQCskTIkrD" },
 ];
 
@@ -216,11 +47,193 @@ function getQueryParam(name) {
   return url.searchParams.get(name) || "";
 }
 
-function safeSortPlaylists(list) {
-  return [...list].sort((a, b) => a.name.localeCompare(b.name));
-}
+const styles = {
+  page: {
+    minHeight: "100vh",
+    background: BRAND.bg,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
+    fontFamily:
+      'system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial',
+  },
+
+  // Decorative background layer: MUST NOT block clicks
+  bgDecor: {
+    position: "fixed",
+    inset: 0,
+    pointerEvents: "none",
+    background:
+      "radial-gradient(900px 500px at 20% 10%, rgba(245,196,0,0.22), transparent 55%), radial-gradient(700px 450px at 85% 20%, rgba(255,255,255,0.14), transparent 50%)",
+  },
+
+  card: {
+    width: "100%",
+    maxWidth: 820,
+    background: BRAND.card,
+    borderRadius: 22,
+    boxShadow: "0 18px 55px rgba(0,0,0,0.22)",
+    border: `1px solid ${BRAND.border}`,
+    overflow: "hidden",
+    position: "relative",
+    zIndex: 1,
+  },
+  cardInner: { padding: 22 },
+
+  headerRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: 14,
+    marginBottom: 10,
+  },
+  logoWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 14,
+    background: "rgba(245,196,0,0.12)",
+    border: `2px solid ${BRAND.accent}`,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+    flex: "0 0 auto",
+  },
+  logoImg: { width: "100%", height: "100%", objectFit: "cover" },
+
+  title: { margin: 0, fontSize: 28, lineHeight: 1.1, color: BRAND.text },
+  subtitle: {
+    margin: "6px 0 0 0",
+    color: BRAND.muted,
+    fontSize: 14,
+    lineHeight: 1.4,
+  },
+
+  divider: {
+    height: 1,
+    background: `linear-gradient(90deg, transparent, ${BRAND.border}, transparent)`,
+    margin: "14px 0 18px 0",
+  },
+
+  grid2: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: 12,
+    marginTop: 12,
+  },
+
+  label: { display: "block" },
+  labelTitle: {
+    fontWeight: 800,
+    fontSize: 13,
+    color: BRAND.text,
+    marginBottom: 6,
+  },
+
+  // IMPORTANT: Make inputs always clickable + on top
+  input: {
+    width: "100%",
+    padding: "12px 12px",
+    borderRadius: 12,
+    border: `1px solid ${BRAND.border}`,
+    outline: "none",
+    fontSize: 14,
+    background: "#fff",
+    position: "relative",
+    zIndex: 10,
+    pointerEvents: "auto",
+  },
+
+  select: {
+    width: "100%",
+    padding: "12px 12px",
+    borderRadius: 12,
+    border: `1px solid ${BRAND.border}`,
+    outline: "none",
+    fontSize: 14,
+    background: "#fff",
+    position: "relative",
+    zIndex: 50, // higher than anything else
+    pointerEvents: "auto",
+    cursor: "pointer",
+    WebkitAppearance: "menulist",
+    appearance: "menulist",
+  },
+
+  textarea: {
+    width: "100%",
+    padding: "12px 12px",
+    borderRadius: 12,
+    border: `1px solid ${BRAND.border}`,
+    outline: "none",
+    fontSize: 14,
+    background: "#fff",
+    minHeight: 110,
+    resize: "vertical",
+    position: "relative",
+    zIndex: 10,
+    pointerEvents: "auto",
+  },
+
+  section: {
+    marginTop: 16,
+    padding: 14,
+    borderRadius: 14,
+    border: `1px solid ${BRAND.border}`,
+    background: "rgba(86,122,150,0.06)",
+    position: "relative",
+    zIndex: 2,
+  },
+  sectionTitle: { fontWeight: 900, marginBottom: 10, color: BRAND.text },
+
+  checkboxRow: {
+    display: "flex",
+    gap: 10,
+    alignItems: "flex-start",
+    marginBottom: 10,
+  },
+  checkboxText: { color: BRAND.text, fontSize: 14, lineHeight: 1.35 },
+  small: { color: BRAND.muted, fontSize: 12, marginTop: 2 },
+
+  button: {
+    marginTop: 18,
+    width: "100%",
+    padding: "14px 16px",
+    borderRadius: 14,
+    border: "none",
+    background: BRAND.accent,
+    color: "#1b1b1b",
+    fontWeight: 900,
+    fontSize: 15,
+    cursor: "pointer",
+    boxShadow: "0 10px 22px rgba(245,196,0,0.35)",
+    position: "relative",
+    zIndex: 5,
+  },
+  buttonDisabled: {
+    opacity: 0.55,
+    cursor: "not-allowed",
+  },
+
+  copyright: {
+    marginTop: 14,
+    color: "rgba(31,42,51,0.72)",
+    fontSize: 12,
+    lineHeight: 1.35,
+    textAlign: "center",
+  },
+
+  bottomNoteOutsideCard: {
+    marginTop: 10,
+    color: "rgba(255,255,255,0.82)",
+    fontSize: 12,
+    textAlign: "center",
+  },
+};
 
 export default function Submit() {
+  const [playlists, setPlaylists] = useState(FALLBACK_PLAYLISTS);
+
   const [playlistId, setPlaylistId] = useState("");
   const [playlistName, setPlaylistName] = useState("");
   const [trackUrl, setTrackUrl] = useState("");
@@ -229,134 +242,107 @@ export default function Submit() {
   const [instagram, setInstagram] = useState("");
   const [pitch, setPitch] = useState("");
 
-  // ✅ All 4 checked by default
+  // ✅ all 4 default checked
   const [consentFollowCurator, setConsentFollowCurator] = useState(true);
   const [consentFollowPlaylist, setConsentFollowPlaylist] = useState(true);
   const [consentSaveTrack, setConsentSaveTrack] = useState(true);
   const [consentPresave, setConsentPresave] = useState(true);
 
-  // Config-loaded (optional)
-  const [playlists, setPlaylists] = useState(() => safeSortPlaylists(FALLBACK_PLAYLISTS));
-  const [configWarning, setConfigWarning] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
 
-  // Prefill via URL params (optional)
-  useEffect(() => {
+  // Prefill from query (?playlistId=...&playlistName=...)
+  useMemo(() => {
+    if (typeof window === "undefined") return;
     const pid = getQueryParam("playlistId");
     const pname = getQueryParam("playlistName");
     if (pid) setPlaylistId(pid);
     if (pname) setPlaylistName(pname);
   }, []);
 
-  // Optional: load config from /api/public-config
+  // Optional config fetch (won't break UI if it fails)
   useEffect(() => {
     let cancelled = false;
-
-    async function loadConfig() {
+    (async () => {
       try {
         const res = await fetch("/api/public-config", { cache: "no-store" });
-        const ct = (res.headers.get("content-type") || "").toLowerCase();
-
-        // Only accept JSON — this prevents the “Unexpected token '<' … is not valid JSON”
-        if (!res.ok || !ct.includes("application/json")) return;
-
+        if (!res.ok) return;
         const data = await res.json();
         if (cancelled) return;
 
+        // Expecting: { playlists: [{name,id}], ... } (if you later add this)
         if (Array.isArray(data?.playlists) && data.playlists.length) {
-          setPlaylists(safeSortPlaylists(data.playlists));
+          setPlaylists(data.playlists);
         }
-
-        // Optional: allow config to set default gates
-        if (data?.gates?.followPlaylist != null) setConsentFollowPlaylist(!!data.gates.followPlaylist);
-        if (data?.gates?.followCurator != null) setConsentFollowCurator(!!data.gates.followCurator);
-        if (data?.gates?.saveTrack != null) setConsentSaveTrack(!!data.gates.saveTrack);
-        if (data?.gates?.presave != null) setConsentPresave(!!data.gates.presave);
       } catch (e) {
-        // Don’t show scary warning; fallback continues to work.
-        // If you DO want a warning, uncomment below:
-        // if (!cancelled) setConfigWarning("Config could not be loaded. Using fallback playlists.");
+        // No banner — just silent fallback
+        console.warn("public-config load failed (fallback in use)", e);
       }
-    }
-
-    loadConfig();
+    })();
     return () => {
       cancelled = true;
     };
   }, []);
 
-  const selectedPlaylist = useMemo(
-    () => playlists.find((p) => p.id === playlistId) || null,
-    [playlists, playlistId]
-  );
-
-  useEffect(() => {
-    // Auto-fill playlist name when selecting from dropdown (only if empty or matches old selection behavior)
-    if (selectedPlaylist && (!playlistName || playlistName === selectedPlaylist.name)) {
-      setPlaylistName(selectedPlaylist.name);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playlistId]);
+  const canSubmit = playlistId && trackUrl && !busy;
 
   async function startSpotify() {
-    // Basic validation
-    if (!playlistId) {
-      alert("Please select a playlist.");
-      return;
-    }
-    if (!trackUrl || !trackUrl.includes("open.spotify.com/track/")) {
-      alert("Please paste a valid Spotify track link (open.spotify.com/track/...).");
-      return;
-    }
+    setError("");
+    if (!playlistId) return setError("Please select a playlist.");
+    if (!trackUrl) return setError("Please paste a Spotify track link.");
 
-    // Persist draft for after OAuth
-    const draft = {
-      playlistId,
-      playlistName: playlistName || selectedPlaylist?.name || "",
-      trackUrl,
-      artistName,
-      email,
-      instagram,
-      pitch,
-      consentFollowCurator,
-      consentFollowPlaylist,
-      consentSaveTrack,
-      consentPresave,
-    };
-
+    setBusy(true);
     try {
+      // Persist a draft so the OAuth callback can finalize the submission
+      const draft = {
+        playlistId,
+        playlistName,
+        trackUrl,
+        artistName,
+        email,
+        instagram,
+        pitch,
+        consentFollowCurator,
+        consentFollowPlaylist,
+        consentSaveTrack,
+        consentPresave,
+      };
+
       if (typeof window !== "undefined") {
         localStorage.setItem("egm_submission_draft", JSON.stringify(draft));
       }
-    } catch (_) {}
 
-    // Kick off OAuth (existing backend route in your project)
-    try {
+      // Kick off Spotify OAuth (existing endpoint in your project)
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}), // backend can read draft from localStorage after redirect; or ignore body
+        body: JSON.stringify({}),
       });
-      const data = await res.json();
+
+      const data = await res.json().catch(() => ({}));
       if (data?.url) {
         window.location.href = data.url;
-        return;
+      } else {
+        setError("Could not start Spotify login. Please try again.");
       }
-      alert("Could not start Spotify login. Please check /api/auth/login.");
     } catch (e) {
-      alert("Could not start Spotify login. Please check /api/auth/login.");
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setBusy(false);
     }
   }
 
   return (
     <div style={styles.page}>
-      <div style={{ width: "100%", maxWidth: styles.card.maxWidth }}>
+      <div style={styles.bgDecor} />
+
+      <div style={{ width: "100%", maxWidth: 820 }}>
         <main style={styles.card}>
           <div style={styles.cardInner}>
-            <div style={styles.brandRow}>
-              <div style={styles.logoImgWrap}>
+            <div style={styles.headerRow}>
+              <div style={styles.logoWrap}>
                 <img src={LOGO_URL} alt="EGM Playlists" style={styles.logoImg} />
               </div>
-
               <div style={{ minWidth: 0 }}>
                 <h1 style={styles.title}>Submit your track</h1>
                 <p style={styles.subtitle}>
@@ -365,23 +351,38 @@ export default function Submit() {
               </div>
             </div>
 
-            {configWarning ? <div style={styles.warning}>{configWarning}</div> : null}
-
             <div style={styles.divider} />
 
-            {/* Playlist + Playlist name */}
-            <div style={styles.grid2Tight}>
+            {error ? (
+              <div
+                style={{
+                  padding: 12,
+                  border: "1px solid rgba(220,53,69,0.35)",
+                  background: "rgba(220,53,69,0.06)",
+                  borderRadius: 12,
+                  color: BRAND.text,
+                  marginBottom: 12,
+                }}
+              >
+                <strong style={{ display: "block", marginBottom: 4 }}>
+                  Please check:
+                </strong>
+                <div style={{ fontSize: 13, opacity: 0.9 }}>{error}</div>
+              </div>
+            ) : null}
+
+            <div style={styles.grid2}>
               <label style={styles.label}>
                 <div style={styles.labelTitle}>Playlist</div>
                 <select
                   value={playlistId}
                   onChange={(e) => {
-                    const id = e.target.value;
-                    setPlaylistId(id);
-                    const sel = playlists.find((p) => p.id === id);
-                    if (sel) setPlaylistName(sel.name);
+                    const val = e.target.value;
+                    setPlaylistId(val);
+                    const selected = playlists.find((p) => p.id === val);
+                    if (selected) setPlaylistName(selected.name);
                   }}
-                  style={styles.input}
+                  style={styles.select}
                 >
                   <option value="">Select a playlist</option>
                   {playlists.map((p) => (
@@ -403,8 +404,7 @@ export default function Submit() {
               </label>
             </div>
 
-            {/* Track link */}
-            <label style={{ ...styles.label, marginTop: 14 }}>
+            <label style={{ ...styles.label, marginTop: 12 }}>
               <div style={styles.labelTitle}>Spotify track link</div>
               <input
                 value={trackUrl}
@@ -414,7 +414,6 @@ export default function Submit() {
               />
             </label>
 
-            {/* Artist + Instagram */}
             <div style={styles.grid2}>
               <label style={styles.label}>
                 <div style={styles.labelTitle}>Artist name</div>
@@ -437,8 +436,7 @@ export default function Submit() {
               </label>
             </div>
 
-            {/* Email */}
-            <label style={{ ...styles.label, marginTop: 14 }}>
+            <label style={{ ...styles.label, marginTop: 12 }}>
               <div style={styles.labelTitle}>Email</div>
               <input
                 value={email}
@@ -448,8 +446,7 @@ export default function Submit() {
               />
             </label>
 
-            {/* Pitch */}
-            <label style={{ ...styles.label, marginTop: 14 }}>
+            <label style={{ ...styles.label, marginTop: 12 }}>
               <div style={styles.labelTitle}>Pitch</div>
               <textarea
                 value={pitch}
@@ -459,7 +456,6 @@ export default function Submit() {
               />
             </label>
 
-            {/* Gates */}
             <div style={styles.section}>
               <div style={styles.sectionTitle}>Spotify actions (gates)</div>
 
@@ -470,8 +466,8 @@ export default function Submit() {
                   onChange={(e) => setConsentFollowPlaylist(e.target.checked)}
                 />
                 <div>
-                  <div style={{ ...styles.checkboxText, fontWeight: 800 }}>
-                    Follow selected playlist
+                  <div style={styles.checkboxText}>
+                    <strong>Follow selected playlist</strong>
                   </div>
                   <div style={styles.small}>
                     You’ll follow the playlist you are submitting to.
@@ -486,8 +482,8 @@ export default function Submit() {
                   onChange={(e) => setConsentFollowCurator(e.target.checked)}
                 />
                 <div>
-                  <div style={{ ...styles.checkboxText, fontWeight: 800 }}>
-                    Follow curator profile
+                  <div style={styles.checkboxText}>
+                    <strong>Follow curator profile</strong>
                   </div>
                   <div style={styles.small}>You’ll follow the curator on Spotify.</div>
                 </div>
@@ -500,8 +496,8 @@ export default function Submit() {
                   onChange={(e) => setConsentSaveTrack(e.target.checked)}
                 />
                 <div>
-                  <div style={{ ...styles.checkboxText, fontWeight: 800 }}>
-                    Save curator track
+                  <div style={styles.checkboxText}>
+                    <strong>Save curator track</strong>
                   </div>
                   <div style={styles.small}>
                     A curator track will be saved to your library.
@@ -516,29 +512,38 @@ export default function Submit() {
                   onChange={(e) => setConsentPresave(e.target.checked)}
                 />
                 <div>
-                  <div style={{ ...styles.checkboxText, fontWeight: 800 }}>
-                    Pre-save upcoming release
+                  <div style={styles.checkboxText}>
+                    <strong>Pre-save upcoming release</strong>
                   </div>
                   <div style={styles.small}>
                     Only if an upcoming release is configured.
                   </div>
                 </div>
               </label>
-
-              {/* ✅ copyright / disclaimer UNDER the gates */}
-              <div style={styles.footnote}>
-                By continuing, you confirm that you have the rights/permission to submit this music.
-                Spotify actions will only be executed after you approve Spotify login.
-              </div>
             </div>
 
-            <button onClick={startSpotify} style={styles.button}>
-              Connect with Spotify &amp; Submit
+            <button
+              onClick={startSpotify}
+              style={{
+                ...styles.button,
+                ...(canSubmit ? null : styles.buttonDisabled),
+              }}
+              disabled={!canSubmit}
+              title={!playlistId ? "Select a playlist first" : !trackUrl ? "Paste a track link" : ""}
+            >
+              {busy ? "Starting Spotify..." : "Connect with Spotify & Submit"}
             </button>
+
+            <div style={styles.copyright}>
+              By submitting, you confirm you have the rights to share this music. ©{" "}
+              {new Date().getFullYear()} EGM Playlists. All rights reserved.
+            </div>
           </div>
         </main>
 
-        <div style={styles.pageBottom}>© {new Date().getFullYear()} EGM Playlists</div>
+        <div style={styles.bottomNoteOutsideCard}>
+          Tip: Use a Spotify track link (not an album/artist link).
+        </div>
       </div>
     </div>
   );
