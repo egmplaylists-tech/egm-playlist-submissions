@@ -1,127 +1,87 @@
 import { createClient } from "@supabase/supabase-js";
 
-/**
- * Extract Spotify ID from:
- * - https://open.spotify.com/playlist/<ID>?...
- * - https://open.spotify.com/track/<ID>?...
- * - spotify:playlist:<ID>
- * - spotify:track:<ID>
- */
-function extractSpotifyId(input, type) {
+function extractPlaylistId(input) {
   if (!input) return "";
   const s = String(input).trim();
 
-  // spotify:playlist:<id> or spotify:track:<id>
-  const colonPrefix = `spotify:${type}:`;
-  if (s.startsWith(colonPrefix)) {
-    return s.slice(colonPrefix.length).split("?")[0].trim();
+  // spotify:playlist:<id>
+  if (s.startsWith("spotify:playlist:")) {
+    return s.split("spotify:playlist:")[1].split("?")[0].trim();
   }
 
-  // open.spotify.com/<type>/<id>
-  const m = s.match(new RegExp(`open\\.spotify\\.com\\/${type}\\/([A-Za-z0-9]+)`));
+  // https://open.spotify.com/playlist/<id>
+  const m = s.match(/open\.spotify\.com\/playlist\/([A-Za-z0-9]+)/);
   if (m && m[1]) return m[1];
 
-  // if it's already an ID (spotify IDs are alnum, usually 22 chars)
+  // already looks like an id
   if (/^[A-Za-z0-9]{10,40}$/.test(s) && !s.includes("http")) return s;
 
   return "";
 }
 
-function bad(res, msg, code = 400) {
-  return res.status(code).json({ ok: false, error: msg });
+function extractTrackId(input) {
+  if (!input) return "";
+  const s = String(input).trim();
+
+  // spotify:track:<id>
+  if (s.startsWith("spotify:track:")) {
+    return s.split("spotify:track:")[1].split("?")[0].trim();
+  }
+
+  // https://open.spotify.com/track/<id>
+  const m = s.match(/open\.spotify\.com\/track\/([A-Za-z0-9]+)/);
+  if (m && m[1]) return m[1];
+
+  return "";
 }
 
 const supabase = createClient(
   process.env.SUPABASE_URL || "",
-  // your env var is named SUPABASE_SERVICE_KEY in Vercel screenshot
-  process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+  process.env.SUPABASE_SERVICE_KEY || ""
 );
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") return bad(res, "Method not allowed", 405);
+  if (req.method !== "POST") return res.status(405).json({ ok: false, error: "Method not allowed" });
 
   try {
-    const body = req.body || {};
+    const b = req.body || {};
 
-    // Accept both naming styles (to be safe)
-    const playlistIdRaw = body.playlistId || body.playlist_id || "";
-    const playlistName = body.playlistName || body.playlist_name || null;
-    const trackUrl = body.trackUrl || body.submitted_track_url || "";
-    const artistName = body.artistName || body.artist_name || "";
-    const email = body.email || "";
-    const instagram = body.instagram || null;
-    const pitch = body.pitch || null;
+    const playlistId = extractPlaylistId(b.playlistId || b.playlist_id || "");
+    const playlistName = b.playlistName || b.playlist_name || null;
 
-    // Gates/options (kept for later use)
-    const opts = body.opts || {};
-    const followPlaylist = !!opts.followPlaylist;
-    const followCurator = !!opts.followCurator;
-    const saveTrack = !!opts.saveTrack;
-    const presave = !!opts.presave;
+    const trackUrl = b.trackUrl || b.submitted_track_url || "";
+    const trackId = extractTrackId(trackUrl);
 
-    // Validate required fields
-    const playlistId = extractSpotifyId(playlistIdRaw, "playlist");
-    if (!playlistId) return bad(res, "Missing/invalid playlistId");
-    const trackId = extractSpotifyId(trackUrl, "track");
-    if (!trackId) return bad(res, "Missing/invalid Spotify track link");
-    if (!artistName || String(artistName).trim().length < 2)
-      return bad(res, "Artist name is required");
-    if (!email || !String(email).includes("@"))
-      return bad(res, "Email is required");
+    const artistName = (b.artistName || b.artist_name || "").trim();
+    const email = (b.email || "").trim();
 
-    // Insert submission
-    const insertRow = {
-      playlist_id: String(playlistId),
-      playlist_name: playlistName ? String(playlistName) : null,
-      submitted_track_url: String(trackUrl),
-      artist_name: String(artistName),
-      email: String(email),
-      instagram: instagram ? String(instagram) : null,
-      pitch: pitch ? String(pitch) : null,
-      status: "new",
-      // store opts (optional columns — if they don't exist, Supabase will error)
-      // If your table doesn't have these columns, remove them.
-      follow_playlist: followPlaylist,
-      follow_curator: followCurator,
-      save_track: saveTrack,
-      presave: presave,
-    };
+    const instagram = (b.instagram || "").trim() || null;
+    const pitch = (b.pitch || "").trim() || null;
+
+    if (!playlistId) return res.status(400).json({ ok: false, error: "Invalid playlist" });
+    if (!trackId) return res.status(400).json({ ok: false, error: "Invalid Spotify track link" });
+    if (!artistName) return res.status(400).json({ ok: false, error: "Artist name is required" });
+    if (!email || !email.includes("@")) return res.status(400).json({ ok: false, error: "Email is required" });
 
     const { data, error } = await supabase
       .from("submissions")
-      .insert([insertRow])
+      .insert([{
+        playlist_id: playlistId,
+        playlist_name: playlistName,
+        submitted_track_url: trackUrl,
+        artist_name: artistName,
+        email,
+        instagram,
+        pitch,
+        status: "new",
+      }])
       .select()
       .single();
 
-    if (error) {
-      // If error is about unknown columns, retry without the gate columns
-      const msg = String(error.message || "");
-      if (msg.toLowerCase().includes("column") && msg.toLowerCase().includes("does not exist")) {
-        const fallbackRow = {
-          playlist_id: String(playlistId),
-          playlist_name: playlistName ? String(playlistName) : null,
-          submitted_track_url: String(trackUrl),
-          artist_name: String(artistName),
-          email: String(email),
-          instagram: instagram ? String(instagram) : null,
-          pitch: pitch ? String(pitch) : null,
-          status: "new",
-        };
-        const retry = await supabase
-          .from("submissions")
-          .insert([fallbackRow])
-          .select()
-          .single();
-
-        if (retry.error) return bad(res, retry.error.message || "DB insert failed", 500);
-        return res.status(200).json({ ok: true, submission: retry.data });
-      }
-
-      return bad(res, error.message || "DB insert failed", 500);
-    }
+    if (error) return res.status(500).json({ ok: false, error: error.message });
 
     return res.status(200).json({ ok: true, submission: data });
-  } catch (err) {
-    return bad(res, "Server error", 500);
+  } catch (e) {
+    return res.status(500).json({ ok: false, error: "Server error" });
   }
 }
