@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 
 const BRAND = {
-  bg: "#E9F0F6",
+  // Zachter dan hard wit: licht blauw-grijs (oogvriendelijk)
+  bg: "#F4F7FB",
   card: "#FFFFFF",
   text: "#1F2A33",
   muted: "#5F6B76",
   border: "rgba(31,42,51,0.12)",
   accent: "#F5C400",
+  green: "#16A34A",
+  red: "#E11D48",
 };
 
 const styles = {
@@ -105,13 +108,43 @@ const styles = {
     fontSize: 12,
     color: BRAND.text,
   },
+  // Compacte acties
   actions: {
     display: "flex",
     gap: 8,
     flexWrap: "wrap",
+    alignItems: "center",
+  },
+  iconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    border: `1px solid ${BRAND.border}`,
+    background: "#fff",
+    cursor: "pointer",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    textDecoration: "none",
+    userSelect: "none",
+  },
+  iconBtnGreen: {
+    border: `1px solid rgba(22,163,74,0.25)`,
+  },
+  iconBtnRed: {
+    border: `1px solid rgba(225,29,72,0.25)`,
+  },
+  icon: { width: 18, height: 18, display: "block" },
+  tipBox: {
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 14,
+    border: `1px solid ${BRAND.border}`,
+    background: "rgba(255,255,255,0.7)",
   },
 };
 
+// localStorage helpers
 function getLS(key, fallback = "") {
   if (typeof window === "undefined") return fallback;
   return localStorage.getItem(key) || fallback;
@@ -121,11 +154,10 @@ function setLS(key, value) {
   localStorage.setItem(key, value);
 }
 
+// mailto helpers
 function encodeMailto(text) {
-  // mailto: needs URL encoding, but keep line breaks
-  return encodeURIComponent(text).replace(/%0A/g, "%0D%0A");
+  return encodeURIComponent(text || "").replace(/%0A/g, "%0D%0A");
 }
-
 function buildApprovedEmailBody({ artistName }) {
   return `Hi ${artistName || "there"},
 
@@ -158,7 +190,6 @@ Best regards,
 EGM Playlists
 Curated by real people — powered by passion`;
 }
-
 function buildRejectedEmailBody({ artistName }) {
   return `Hi ${artistName || "there"},
 
@@ -179,7 +210,7 @@ https://www.facebook.com/groups/elgrandemusiceu
 YouTube: https://www.youtube.com/@juanelgrande/playlists
 Instagram: https://www.instagram.com/elgrandemusic_eu/
 Facebook: https://www.facebook.com/JuanElGrandeFans
-Bluesky: https://bsky.app/profile/juanelgrandemusic.bsky.social
+Bluesky: https://bsky.app/profile/juanelgrandemusiceu.bsky.social
 SoundCloud: https://soundcloud.com/juanelgrandemusic
 
 🎧 Discover more playlists
@@ -190,18 +221,65 @@ EGM Playlists
 Curated by real people — powered by passion`;
 }
 
-function makeMailto({ to, subject, body }) {
+// PROBEER "From" te sturen via mailto params (werkt afhankelijk van mailclient)
+// De échte fix blijft: Outlook standaardaccount = submit@...
+function makeMailto({ to, subject, body, preferredFrom }) {
   const s = encodeURIComponent(subject || "");
   const b = encodeMailto(body || "");
-  return `mailto:${encodeURIComponent(to || "")}?subject=${s}&body=${b}`;
+  const base = `mailto:${encodeURIComponent(to || "")}?subject=${s}&body=${b}`;
+
+  // Sommige clients respecteren extra params zoals "from" of "reply-to" niet,
+  // maar het kan helpen in sommige setups.
+  const extra = [];
+  if (preferredFrom) {
+    extra.push(`from=${encodeURIComponent(preferredFrom)}`);
+    extra.push(`reply-to=${encodeURIComponent(preferredFrom)}`);
+  }
+
+  return extra.length ? `${base}&${extra.join("&")}` : base;
+}
+
+// Minimal inline SVG icons (geen dependencies nodig)
+function ThumbsUpIcon({ color = BRAND.green }) {
+  return (
+    <svg viewBox="0 0 24 24" style={styles.icon} aria-hidden="true">
+      <path
+        fill={color}
+        d="M2 21h4V9H2v12Zm20-11c0-1.1-.9-2-2-2h-6.3l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L13 1 7.59 6.41C7.22 6.78 7 7.3 7 7.83V19c0 1.1.9 2 2 2h7c.82 0 1.54-.5 1.84-1.22l2.02-4.71c.09-.23.14-.47.14-.72v-4.35Z"
+      />
+    </svg>
+  );
+}
+function ThumbsDownIcon({ color = BRAND.red }) {
+  return (
+    <svg viewBox="0 0 24 24" style={styles.icon} aria-hidden="true">
+      <path
+        fill={color}
+        d="M22 3h-4v12h4V3ZM2 14c0 1.1.9 2 2 2h6.3l-.95 4.57-.03.32c0 .41.17.79.44 1.06L11 23l5.41-5.41c.37-.37.59-.89.59-1.42V5c0-1.1-.9-2-2-2H8c-.82 0-1.54.5-1.84 1.22L4.14 8.93c-.09.23-.14.47-.14.72V14Z"
+      />
+    </svg>
+  );
+}
+function MailIcon({ color = BRAND.green }) {
+  return (
+    <svg viewBox="0 0 24 24" style={styles.icon} aria-hidden="true">
+      <path
+        fill={color}
+        d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2Zm0 4-8 5L4 8V6l8 5 8-5v2Z"
+      />
+    </svg>
+  );
 }
 
 export default function Admin() {
   const [adminKey, setAdminKey] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  // ✅ Default startpagina = PENDING
+  const [statusFilter, setStatusFilter] = useState("pending");
   const [error, setError] = useState("");
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  const preferredFrom = "submit@egmplaylists.eu";
 
   useEffect(() => {
     setAdminKey(getLS("egm_admin_key", ""));
@@ -216,8 +294,6 @@ export default function Admin() {
       });
       const j = await r.json();
 
-      // Support multiple shapes:
-      // { ok:true, items:[...] } or { data:[...] } or [...]
       const data = Array.isArray(j?.items)
         ? j.items
         : Array.isArray(j?.data)
@@ -227,7 +303,8 @@ export default function Admin() {
         : [];
 
       if (j?.ok === false && j?.error) throw new Error(j.error);
-      if (!Array.isArray(data)) throw new Error("Invalid response from /api/admin/list");
+      if (!Array.isArray(data))
+        throw new Error("Invalid response from /api/admin/list");
 
       setRows(data);
     } catch (e) {
@@ -260,9 +337,69 @@ export default function Admin() {
   const filtered = useMemo(() => {
     if (statusFilter === "all") return rows;
     return rows.filter(
-      (r) => String(r.status || "").toLowerCase() === statusFilter
+      (r) => String(r.status || "pending").toLowerCase() === statusFilter
     );
   }, [rows, statusFilter]);
+
+  function IconButton({ title, onClick, variant = "neutral", children }) {
+    const base = styles.iconBtn;
+    const variantStyle =
+      variant === "green"
+        ? styles.iconBtnGreen
+        : variant === "red"
+        ? styles.iconBtnRed
+        : null;
+
+    return (
+      <button
+        type="button"
+        title={title}
+        aria-label={title}
+        onClick={onClick}
+        style={{ ...base, ...(variantStyle || {}) }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = "translateY(-1px)";
+          e.currentTarget.style.boxShadow = "0 6px 18px rgba(0,0,0,0.08)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "translateY(0px)";
+          e.currentTarget.style.boxShadow = "none";
+        }}
+      >
+        {children}
+      </button>
+    );
+  }
+
+  function IconLink({ title, href, variant = "neutral", onGuardClick, children }) {
+    const base = styles.iconBtn;
+    const variantStyle =
+      variant === "green"
+        ? styles.iconBtnGreen
+        : variant === "red"
+        ? styles.iconBtnRed
+        : null;
+
+    return (
+      <a
+        title={title}
+        aria-label={title}
+        href={href || "#"}
+        onClick={onGuardClick}
+        style={{ ...base, ...(variantStyle || {}) }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = "translateY(-1px)";
+          e.currentTarget.style.boxShadow = "0 6px 18px rgba(0,0,0,0.08)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "translateY(0px)";
+          e.currentTarget.style.boxShadow = "none";
+        }}
+      >
+        {children}
+      </a>
+    );
+  }
 
   return (
     <main style={styles.page}>
@@ -291,15 +428,17 @@ export default function Admin() {
             Save key
           </button>
 
+          {/* ✅ Default = pending */}
           <select
             style={styles.input}
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
+            title="Filter"
           >
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
             <option value="all">All</option>
-            <option value="pending">pending</option>
-            <option value="approved">approved</option>
-            <option value="rejected">rejected</option>
           </select>
 
           <button style={styles.btn} onClick={loadSubmissions}>
@@ -323,7 +462,8 @@ export default function Admin() {
             </div>
           </div>
           <div style={styles.small}>
-            Tip: Use “Email artist” buttons to send messages manually (no Resend needed).
+            Tip: Email buttons open your mail client. Set Outlook default account to{" "}
+            <b>{preferredFrom}</b> to avoid wrong sender.
           </div>
         </div>
 
@@ -376,6 +516,7 @@ export default function Admin() {
                         to: email,
                         subject: approvedSubject,
                         body: approvedBody,
+                        preferredFrom,
                       })
                     : "";
 
@@ -384,6 +525,7 @@ export default function Admin() {
                         to: email,
                         subject: rejectedSubject,
                         body: rejectedBody,
+                        preferredFrom,
                       })
                     : "";
 
@@ -406,55 +548,57 @@ export default function Admin() {
                       <td style={styles.td}>{email || "-"}</td>
                       <td style={styles.td}>{r.instagram || "-"}</td>
                       <td style={styles.td}>{r.status || "pending"}</td>
+
+                      {/* ✅ Compacte icon actions */}
                       <td style={styles.td}>
                         <div style={styles.actions}>
-                          <button
-                            style={styles.btnAccent}
+                          {/* Approve */}
+                          <IconButton
+                            title="Approve"
+                            variant="green"
                             onClick={() => setStatus(r.id, "approved")}
                           >
-                            Approve
-                          </button>
+                            <ThumbsUpIcon />
+                          </IconButton>
 
-                          <button
-                            style={styles.btn}
+                          {/* Reject */}
+                          <IconButton
+                            title="Reject"
+                            variant="red"
                             onClick={() => setStatus(r.id, "rejected")}
                           >
-                            Reject
-                          </button>
+                            <ThumbsDownIcon />
+                          </IconButton>
 
-                          <a
+                          {/* Email Approved */}
+                          <IconLink
+                            title="Email (Approved)"
+                            variant="green"
                             href={mailtoApproved || "#"}
-                            onClick={(e) => {
+                            onGuardClick={(e) => {
                               if (!mailtoApproved) {
                                 e.preventDefault();
                                 alert("No email found for this submission.");
                               }
                             }}
-                            style={{
-                              ...styles.btn,
-                              textDecoration: "none",
-                              display: "inline-block",
-                            }}
                           >
-                            Email artist (Approved)
-                          </a>
+                            <MailIcon color={BRAND.green} />
+                          </IconLink>
 
-                          <a
+                          {/* Email Rejected */}
+                          <IconLink
+                            title="Email (Rejected)"
+                            variant="red"
                             href={mailtoRejected || "#"}
-                            onClick={(e) => {
+                            onGuardClick={(e) => {
                               if (!mailtoRejected) {
                                 e.preventDefault();
                                 alert("No email found for this submission.");
                               }
                             }}
-                            style={{
-                              ...styles.btn,
-                              textDecoration: "none",
-                              display: "inline-block",
-                            }}
                           >
-                            Email artist (Rejected)
-                          </a>
+                            <MailIcon color={BRAND.red} />
+                          </IconLink>
                         </div>
                       </td>
                     </tr>
@@ -465,8 +609,13 @@ export default function Admin() {
           </table>
         </div>
 
-        <div style={{ padding: 14, ...styles.small }}>
-          Security note: this page uses an admin key stored in your browser (localStorage) and checked server-side.
+        <div style={styles.tipBox}>
+          <div style={styles.small}>
+            <b>Important:</b> This page uses an admin key stored in your browser (localStorage) and checked server-side.
+            <br />
+            <b>Mail tip:</b> To always reply from <b>{preferredFrom}</b>, set that account as default in Outlook.
+            Some mail clients ignore the “from/reply-to” mailto parameters.
+          </div>
         </div>
       </div>
     </main>
