@@ -104,10 +104,10 @@ const styles = {
 };
 
 /**
- * ✅ Playlist list (name + playlistId)
- * We store ONLY the playlist ID (the part after /playlist/)
+ * ✅ Fallback playlist list (name + id)
+ * Als app_config niet kan laden, blijft je site 100% werken met deze lijst.
  */
-const PLAYLISTS = [
+const FALLBACK_PLAYLISTS = [
   { name: "EGM - Discovery Channel", id: "1e7cbv7cz2mKiaXPcexn9w" },
   { name: "EGM - On the right track", id: "5DOj4e0AvGKjgQXC8FA4Wd" },
   { name: "EGM - El Grande Christmas Times", id: "2tHFAcE6MOL1B93EaxZ71Q" },
@@ -147,6 +147,26 @@ function isLikelySpotifyTrackUrl(url) {
   return /open\.spotify\.com\/track\/[A-Za-z0-9]+/i.test(url.trim());
 }
 
+function normalizePlaylists(list) {
+  if (!Array.isArray(list)) return [];
+  const cleaned = list
+    .map((p) => ({
+      name: String(p?.name || "").trim(),
+      id: String(p?.id || "").trim(),
+    }))
+    .filter((p) => p.name && p.id);
+
+  // de-dupe by id
+  const seen = new Set();
+  const deduped = [];
+  for (const p of cleaned) {
+    if (seen.has(p.id)) continue;
+    seen.add(p.id);
+    deduped.push(p);
+  }
+  return deduped;
+}
+
 export default function Submit() {
   const [playlistId, setPlaylistId] = useState("");
   const [playlistName, setPlaylistName] = useState("");
@@ -166,23 +186,73 @@ export default function Submit() {
   const [error, setError] = useState("");
   const [okMsg, setOkMsg] = useState("");
 
-  useMemo(() => {
-    if (typeof window === "undefined") return;
+  // ✅ playlists now come from app_config (fallback to hardcoded list)
+  const [playlists, setPlaylists] = useState(FALLBACK_PLAYLISTS);
+  const [playlistsSource, setPlaylistsSource] = useState("fallback");
+
+  // 1) Load playlists from app_config (client-side)
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadPlaylists() {
+      try {
+        const supabaseUrl =
+          process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+        const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+        // If env vars are missing, just keep fallback (no crash)
+        if (!supabaseUrl || !anonKey) return;
+
+        const url =
+          supabaseUrl.replace(/\/$/, "") +
+          `/rest/v1/app_config?id=eq.main&select=config`;
+
+        const r = await fetch(url, {
+          headers: {
+            apikey: anonKey,
+            authorization: `Bearer ${anonKey}`,
+          },
+        });
+
+        if (!r.ok) return;
+        const j = await r.json().catch(() => null);
+
+        const cfg = Array.isArray(j) && j[0]?.config ? j[0].config : null;
+        const list = cfg?.playlists;
+
+        const normalized = normalizePlaylists(list);
+        if (!cancelled && normalized.length) {
+          setPlaylists(normalized);
+          setPlaylistsSource("app_config");
+        }
+      } catch {
+        // keep fallback silently
+      }
+    }
+
+    loadPlaylists();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // 2) Read playlistId/Name from query params once
+  useEffect(() => {
     const pid = getQueryParam("playlistId");
     const pname = getQueryParam("playlistName");
     if (pid) setPlaylistId(pid);
     if (pname) setPlaylistName(pname);
   }, []);
 
+  // 3) Auto-fill playlistName when playlistId changes (using current playlists list)
   useEffect(() => {
-    // auto-fill playlist name when playlistId changes
-    const selected = PLAYLISTS.find((p) => p.id === playlistId);
+    const selected = playlists.find((p) => p.id === playlistId);
     if (selected) setPlaylistName(selected.name);
-  }, [playlistId]);
+  }, [playlistId, playlists]);
 
   const selectedPlaylist = useMemo(
-    () => PLAYLISTS.find((p) => p.id === playlistId) || null,
-    [playlistId]
+    () => playlists.find((p) => p.id === playlistId) || null,
+    [playlistId, playlists]
   );
 
   async function handleSubmit() {
@@ -223,11 +293,9 @@ export default function Submit() {
       }
 
       setOkMsg("Thanks! Your submission has been received.");
-      // optional: clear some fields
       setTrackUrl("");
       setInstagram("");
       setPitch("");
-      // keep playlist selected; up to you
     } catch (e) {
       setError(String(e?.message || e));
     } finally {
@@ -250,12 +318,19 @@ export default function Submit() {
               <p style={styles.subtitle}>
                 Real support for your music — reviewed by real curators.
               </p>
+              <div style={{ marginTop: 6, fontSize: 12, color: BRAND.muted }}>
+                Playlists source: <b>{playlistsSource}</b>
+              </div>
             </div>
           </div>
 
           <div style={styles.divider} />
 
-          {!!error && <div style={styles.errorBox}><b>Error:</b> {error}</div>}
+          {!!error && (
+            <div style={styles.errorBox}>
+              <b>Error:</b> {error}
+            </div>
+          )}
           {!!okMsg && <div style={styles.successBox}>{okMsg}</div>}
 
           <div style={styles.grid2}>
@@ -267,7 +342,7 @@ export default function Submit() {
                 style={styles.input}
               >
                 <option value="">Select a playlist</option>
-                {PLAYLISTS.map((p) => (
+                {playlists.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
                   </option>
