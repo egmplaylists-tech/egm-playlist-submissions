@@ -30,4 +30,4 @@ Scopes requested:
 
 ## Notes
 - This starter stores Spotify access token in DB and does not refresh yet.
-  Next step is adding refresh + presave scheduler.
+  Next step is adding refresh + presave scheduler. 
