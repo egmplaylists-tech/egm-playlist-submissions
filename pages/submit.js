@@ -188,7 +188,6 @@ export default function Submit() {
 
   // ✅ playlists now come from app_config (fallback to hardcoded list)
   const [playlists, setPlaylists] = useState(FALLBACK_PLAYLISTS);
-  const [playlistsSource, setPlaylistsSource] = useState("fallback");
 
   // 1) Load playlists from app_config (client-side)
   useEffect(() => {
@@ -223,7 +222,6 @@ export default function Submit() {
         const normalized = normalizePlaylists(list);
         if (!cancelled && normalized.length) {
           setPlaylists(normalized);
-          setPlaylistsSource("app_config");
         }
       } catch {
         // keep fallback silently
@@ -318,9 +316,6 @@ export default function Submit() {
               <p style={styles.subtitle}>
                 Real support for your music — reviewed by real curators.
               </p>
-              <div style={{ marginTop: 6, fontSize: 12, color: BRAND.muted }}>
-                Playlists source: <b>{playlistsSource}</b>
-              </div>
             </div>
           </div>
 
