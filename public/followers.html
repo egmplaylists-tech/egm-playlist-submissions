@@ -1,59 +1,52 @@
-<div id="egmFollowersBadge" style="
-    display:inline-block;
-    padding:10px 18px;
-    border-radius:999px;
-    font-weight:700;
-    font-size:18px;
-    background:#7fe9ee;
-    color:#0b2b2c;
-    margin:14px 0 18px 0;
-">
-Loading followers...
-</div>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin:0; display:flex; justify-content:center; align-items:center; height:80px; font-family:Arial, sans-serif; background:transparent; }
+  .badge {
+    display:inline-block; padding:10px 18px; border-radius:999px;
+    font-weight:700; font-size:18px; background:#7fe9ee; color:#0b2b2c;
+  }
+</style>
+</head>
+<body>
+  <div class="badge" id="followers">Loading followers...</div>
 
 <script>
 (async function () {
+  const el = document.getElementById("followers");
   try {
-
     const SUPABASE_URL = "https://xaignsoucwzdgembhbdn.supabase.co";
-    const API_KEY = "sb_publishable_ChbPK6MxO18sUcJWVOdFMA_L4xKl7yE";
+    const API_KEY = "PLAK_HIER_JE_NIEUWE_sb_publishable_KEY"; // 1 lijn
 
-    const url =
-      SUPABASE_URL +
-      "/rest/v1/playlist_stats?select=total_followers,updated_at&order=updated_at.desc&limit=1";
+    const url = SUPABASE_URL + "/rest/v1/playlist_stats?select=total_followers,updated_at&order=updated_at.desc&limit=1";
 
     const res = await fetch(url, {
       headers: {
-        apikey: API_KEY,
-        Authorization: "Bearer " + API_KEY
+        apikey: API_KEY.trim(),
+        Authorization: "Bearer " + API_KEY.trim(),
+        Accept: "application/json"
       }
     });
 
-    const data = await res.json();
-
-    const total =
-      data &&
-      data.length > 0 &&
-      data[0].total_followers
-        ? data[0].total_followers
-        : null;
-
-    const el = document.getElementById("egmFollowersBadge");
-
-    if (!el) return;
-
-    if (total === null) {
-      el.textContent = "Playlist Followers";
+    if (!res.ok) {
+      const txt = await res.text();
+      el.textContent = "ERROR " + res.status;   // <-- belangrijk
+      console.log("Supabase body:", txt);
       return;
     }
 
-    el.textContent =
-      total.toLocaleString() + " Playlist Followers";
+    const data = await res.json();
+    const total = data?.[0]?.total_followers;
 
+    el.textContent = (Number(total || 0)).toLocaleString() + " Playlist Followers";
   } catch (e) {
-    const el = document.getElementById("egmFollowersBadge");
-    if (el) el.textContent = "Playlist Followers";
-    console.error(e);
+    el.textContent = "JS ERROR";
+    console.log(e);
   }
 })();
 </script>
+</body>
+</html>
+
