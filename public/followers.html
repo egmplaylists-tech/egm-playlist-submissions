@@ -41,13 +41,14 @@
     const total = data?.[0]?.total_followers;
 
     el.textContent = (Number(total || 0)).toLocaleString() + " Playlist Followers";
-  } catch (e) {
-    el.textContent = "JS ERROR";
-    console.log(e);
-  }
+} catch (e) {
+  el.textContent = "JS ERROR: " + (e && e.message ? e.message : String(e));
+  console.log(e);
+}
 })();
 </script>
 </body>
 </html>
+
 
 
