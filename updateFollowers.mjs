@@ -94,15 +94,14 @@ async function main() {
 
   const { error } = await supabase
     .from("playlist_stats")
-    .upsert({
-      id: 1,
+    .insert({
       total_followers: total,
       updated_at: new Date().toISOString(),
     });
-
   if (error) throw error;
 
   console.log("Saved to Supabase");
 }
 
 main().catch(console.error);
+
