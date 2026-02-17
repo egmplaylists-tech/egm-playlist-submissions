@@ -6,11 +6,10 @@ export default async function handler(req, res) {
     const supabaseUrl =
       process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
 
-    // server-side key (veilig op server, nooit in browser)
     const serviceKey =
       process.env.SUPABASE_SERVICE_ROLE_KEY ||
       process.env.SUPABASE_SERVICE_KEY ||
-      process.env.SUPABASE_SERVICE_ROLE_KEY;
+      process.env.SUPABASE_SERVICE_KEY;
 
     if (!supabaseUrl || !serviceKey) {
       return res.status(500).json({
@@ -19,7 +18,21 @@ export default async function handler(req, res) {
       });
     }
 
-    const supabase = createClient(supabaseUrl, serviceKey, {
+    // ✅ duidelijke check (vangt line breaks/spaties/foute URL)
+    let parsed;
+    try {
+      parsed = new URL(String(supabaseUrl).trim());
+    } catch {
+      return res.status(500).json({
+        ok: false,
+        error:
+          "Invalid NEXT_PUBLIC_SUPABASE_URL. It contains a typo/space/newline.",
+      });
+    }
+
+    const cleanUrl = parsed.origin; // bv. https://xxxx.supabase.co
+
+    const supabase = createClient(cleanUrl, serviceKey, {
       auth: { persistSession: false },
     });
 
@@ -32,8 +45,6 @@ export default async function handler(req, res) {
     if (error) return res.status(500).json({ ok: false, error: error.message });
 
     const cfg = data?.config || {};
-
-    // ✅ A: we gebruiken playlist_groups als “single source of truth”
     const groups = Array.isArray(cfg.playlist_groups) ? cfg.playlist_groups : [];
     const flat = groups.flatMap((g) =>
       Array.isArray(g?.playlists) ? g.playlists : []
