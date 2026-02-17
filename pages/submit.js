@@ -39,7 +39,12 @@ const styles = {
     background: "rgba(245,196,0,0.15)",
   },
   title: { margin: 0, fontSize: 28, lineHeight: 1.1, color: BRAND.text },
-  subtitle: { margin: "6px 0 0 0", color: BRAND.muted, fontSize: 14, lineHeight: 1.4 },
+  subtitle: {
+    margin: "6px 0 0 0",
+    color: BRAND.muted,
+    fontSize: 14,
+    lineHeight: 1.4,
+  },
   divider: {
     height: 1,
     background: `linear-gradient(90deg, transparent, ${BRAND.border}, transparent)`,
@@ -47,7 +52,12 @@ const styles = {
   },
   grid2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 },
   label: { display: "block" },
-  labelTitle: { fontWeight: 700, fontSize: 13, color: BRAND.text, marginBottom: 6 },
+  labelTitle: {
+    fontWeight: 700,
+    fontSize: 13,
+    color: BRAND.text,
+    marginBottom: 6,
+  },
   input: {
     width: "100%",
     padding: "12px 12px",
@@ -104,36 +114,11 @@ const styles = {
 };
 
 /**
- * ✅ Fallback playlist list (name + id)
- * Als app_config niet kan laden, blijft je site 100% werken met deze lijst.
+ * Fallback (alleen als de API faalt)
+ * Je mag dit later inkorten, maar laat het even staan als safety net.
  */
 const FALLBACK_PLAYLISTS = [
   { name: "EGM - Discovery Channel", id: "1e7cbv7cz2mKiaXPcexn9w" },
-  { name: "EGM - On the right track", id: "5DOj4e0AvGKjgQXC8FA4Wd" },
-  { name: "EGM - El Grande Christmas Times", id: "2tHFAcE6MOL1B93EaxZ71Q" },
-  { name: "EGM - Purely Instrumental", id: "7hnKdxWaEU7Y4VJ7bA0TpM" },
-  { name: "EGM - Dublin Nights", id: "7M6do4ctayzGohkcyvphpO" },
-  { name: "EGM - K-POP Pastel Beats", id: "5ZDx7VPdItO672rXLBHEHZ" },
-  { name: "EGM - METAL HOT LIST", id: "7DjSSrtfo754qGuXNitdZY" },
-  { name: "EGM - Rasta Frequencies", id: "0Z1Hx8GbG4dbMx2RCsftOS" },
-  { name: "EGM - UK Heat Index", id: "7FmbzAlxzm4lrgVXhgvI7w" },
-  { name: "EGM - RENDEZ-VOUS DYNAMIQUE", id: "767b0LvmGaced7DGNlcVOx" },
-  { name: "EGM - GREAT SUMMER VIBES", id: "2QEHtuvZduBxGoamxzMRb5" },
-  { name: "EGM - BARZ&BEATS", id: "34OcCkNae7oIO2lZAl1ql2" },
-  { name: "EGM - EDM HOT LIST", id: "5fHj1XH3spgbu7HCpBdwNc" },
-  { name: "EGM - POP HOT LIST", id: "5PzyS8Bk815mu4TL25ie1L" },
-  { name: "EGM - BLUES HOT LIST", id: "2MC6NCT1ZX7qrUccbiflAA" },
-  { name: "EGM – BEST OF INDIE CLUB", id: "19KZUoBOKqGcny8wUljNya" },
-  { name: "EGM - Viva la Música Española", id: "434kFORUjrcliaEePwx836" },
-  { name: "EGM - COUNTRY HOT LIST", id: "59EdSE3ti8xkv69T9cJohQ" },
-  { name: "EGM - DANCE MIX", id: "4MDNLs4nj3TgpPeXbiKpRe" },
-  { name: "EGM - ROAD TRACKS", id: "25bGysNJ7BmU1VdUItgOf1" },
-  { name: "EGM - Acoustic HOT LIST", id: "3ixpk3WZEojhoU2dP1Z0K5" },
-  { name: "EGM - ROCK HOT LIST", id: "1cY8086WzcTlcTIcfvDC7C" },
-  { name: "EGM – INDIE HOT LIST", id: "1red8yCovZUY1RdKvxqZDW" },
-  { name: "EGM - RnB HOT LIST", id: "0S1B6CXPJL5relnJ8IbGqM" },
-  { name: "EGM - Discover pop releases here !", id: "1dSS3zG20MP0IhDupSKBPp" },
-  { name: "EGM - RHYTHM of LOVE", id: "1QxQVfe6oE2xvQCskTIkrD" },
 ];
 
 function getQueryParam(name) {
@@ -186,46 +171,20 @@ export default function Submit() {
   const [error, setError] = useState("");
   const [okMsg, setOkMsg] = useState("");
 
-  // ✅ playlists now come from app_config (fallback to hardcoded list)
   const [playlists, setPlaylists] = useState(FALLBACK_PLAYLISTS);
 
-  // 1) Load playlists from app_config (client-side)
+  // ✅ Load playlists server-side via /api/app-config (no CORS issues)
   useEffect(() => {
     let cancelled = false;
 
     async function loadPlaylists() {
       try {
-        const supabaseUrl =
-          process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-        const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-        // If env vars are missing, just keep fallback (no crash)
-        if (!supabaseUrl || !anonKey) return;
-
-        const url =
-          supabaseUrl.replace(/\/$/, "") +
-          `/rest/v1/app_config?id=eq.main&select=config`;
-
-        const r = await fetch(url, {
-          headers: {
-            apikey: anonKey,
-            authorization: `Bearer ${anonKey}`,
-          },
-        });
-
+        // cache-buster zodat je altijd de nieuwste config ziet
+        const r = await fetch(`/api/app-config?ts=${Date.now()}`);
         if (!r.ok) return;
+
         const j = await r.json().catch(() => null);
-
-        const cfg = Array.isArray(j) && j[0]?.config ? j[0].config : null;
-let list = [];
-
-if (cfg?.playlist_groups) {
-  list = cfg.playlist_groups.flatMap(g => g.playlists || []);
-} else if (cfg?.playlists) {
-  list = cfg.playlists;
-}
-
-
+        const list = j?.playlists || [];
 
         const normalized = normalizePlaylists(list);
         if (!cancelled && normalized.length) {
@@ -250,7 +209,7 @@ if (cfg?.playlist_groups) {
     if (pname) setPlaylistName(pname);
   }, []);
 
-  // 3) Auto-fill playlistName when playlistId changes (using current playlists list)
+  // 3) Auto-fill playlistName when playlistId changes
   useEffect(() => {
     const selected = playlists.find((p) => p.id === playlistId);
     if (selected) setPlaylistName(selected.name);
@@ -441,3 +400,4 @@ if (cfg?.playlist_groups) {
     </div>
   );
 }
+
