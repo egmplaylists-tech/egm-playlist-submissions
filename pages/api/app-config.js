@@ -3,36 +3,53 @@ import { createClient } from "@supabase/supabase-js";
 
 export default async function handler(req, res) {
   try {
-    const supabaseUrl =
+    const rawUrl =
       process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
 
     const serviceKey =
       process.env.SUPABASE_SERVICE_ROLE_KEY ||
       process.env.SUPABASE_SERVICE_KEY ||
-      process.env.SUPABASE_SERVICE_KEY;
+      process.env.SUPABASE_SERVICE_ROLE;
 
-    if (!supabaseUrl || !serviceKey) {
-      return res.status(500).json({
-        ok: false,
-        error: "Missing SUPABASE URL or SERVICE ROLE KEY in Vercel env vars",
-      });
+    // 1) env checks
+    if (!rawUrl) {
+      return res.status(500).json({ ok: false, where: "env", error: "Missing SUPABASE URL" });
+    }
+    if (!serviceKey) {
+      return res.status(500).json({ ok: false, where: "env", error: "Missing SERVICE ROLE KEY" });
     }
 
-    // ✅ duidelijke check (vangt line breaks/spaties/foute URL)
-    let parsed;
+    // 2) URL sanitizing check (catches newline/space)
+    const trimmed = String(rawUrl).trim();
+    let origin;
     try {
-      parsed = new URL(String(supabaseUrl).trim());
-    } catch {
+      origin = new URL(trimmed).origin;
+    } catch (e) {
       return res.status(500).json({
         ok: false,
-        error:
-          "Invalid NEXT_PUBLIC_SUPABASE_URL. It contains a typo/space/newline.",
+        where: "url-parse",
+        error: "Invalid NEXT_PUBLIC_SUPABASE_URL (has typo/space/newline)",
+        rawUrlPreview: String(rawUrl).slice(0, 80),
+        trimmedPreview: trimmed.slice(0, 80),
       });
     }
 
-    const cleanUrl = parsed.origin; // bv. https://xxxx.supabase.co
+    // 3) quick reachability test
+    try {
+      const health = await fetch(origin, { method: "GET" });
+      // not all origins return 200, but fetch should not fail
+      res.setHeader("x-health-status", String(health.status));
+    } catch (e) {
+      return res.status(500).json({
+        ok: false,
+        where: "fetch-origin",
+        error: "Fetch to Supabase origin failed (network/DNS/invalid host)",
+        origin,
+      });
+    }
 
-    const supabase = createClient(cleanUrl, serviceKey, {
+    // 4) Supabase query test
+    const supabase = createClient(origin, serviceKey, {
       auth: { persistSession: false },
     });
 
@@ -42,7 +59,9 @@ export default async function handler(req, res) {
       .eq("id", "main")
       .maybeSingle();
 
-    if (error) return res.status(500).json({ ok: false, error: error.message });
+    if (error) {
+      return res.status(500).json({ ok: false, where: "supabase-query", error: error.message, origin });
+    }
 
     const cfg = data?.config || {};
     const groups = Array.isArray(cfg.playlist_groups) ? cfg.playlist_groups : [];
@@ -52,13 +71,19 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       ok: true,
-      playlist_groups: groups,
-      playlists: flat,
+      origin,
+      playlistsCount: flat.length,
+      hasPlaylistGroups: Array.isArray(cfg.playlist_groups),
       debug_marker_submit: cfg.debug_marker_submit || null,
       updated_at_marker: cfg.updated_at_marker || null,
+      playlists: flat,
     });
   } catch (e) {
-    return res.status(500).json({ ok: false, error: String(e?.message || e) });
+    return res.status(500).json({
+      ok: false,
+      where: "catch-all",
+      error: String(e?.message || e),
+    });
   }
 }
 
