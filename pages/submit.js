@@ -217,8 +217,14 @@ export default function Submit() {
         const j = await r.json().catch(() => null);
 
         const cfg = Array.isArray(j) && j[0]?.config ? j[0].config : null;
-        const groups = cfg?.playlist_groups || [];
-        const list = groups.flatMap(g => g.playlists || []);
+let list = [];
+
+if (cfg?.playlist_groups) {
+  list = cfg.playlist_groups.flatMap(g => g.playlists || []);
+} else if (cfg?.playlists) {
+  list = cfg.playlists;
+}
+
 
 
         const normalized = normalizePlaylists(list);
