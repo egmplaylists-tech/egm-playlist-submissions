@@ -37,16 +37,42 @@ export default async function handler(req, res) {
     // Daarna zetten we de Spotify fetch terug goed.
     const total_followers = 14346;
 
-    // 4) Upsert naar playlist_stats (id=1)
-    const upsertUrl =
-      supabaseUrl.replace(/\/$/, "") +
-      "/rest/v1/playlist_stats?on_conflict=id";
+// 4) Update playlist_stats (id=1)  — geen insert/upsert, want id is GENERATED ALWAYS
+const updateUrl =
+  supabaseUrl.replace(/\/$/, "") +
+  "/rest/v1/playlist_stats?id=eq.1";
 
-    const payload = {
-      id: 1,
-      total_followers,
-      updated_at: new Date().toISOString(),
-    };
+const payload = {
+  total_followers,
+  updated_at: new Date().toISOString(),
+};
+
+const r = await fetch(updateUrl, {
+  method: "PATCH",
+  headers: {
+    apikey: serviceKey,
+    authorization: `Bearer ${serviceKey}`,
+    "Content-Type": "application/json",
+    Prefer: "return=representation",
+  },
+  body: JSON.stringify(payload),
+});
+
+const text = await r.text();
+if (!r.ok) {
+  return res.status(500).json({
+    ok: false,
+    where: "supabase-update",
+    status: r.status,
+    body: text || "(empty)",
+  });
+}
+
+return res.status(200).json({
+  ok: true,
+  updated_row: JSON.parse(text || "[]"),
+});
+
 
     const r = await fetch(upsertUrl, {
       method: "POST",
