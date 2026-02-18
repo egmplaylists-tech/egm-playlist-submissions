@@ -1,14 +1,9 @@
 export default async function handler(req, res) {
-  try {
-    // 1) Security check (zelfde key als jij nu gebruikt)
-    const provided = String(req.query.key || "");
-    const expected = String(process.env.ADMIN_KEY || "");
-    if (!expected) {
-      return res.status(500).json({ ok: false, error: "Missing ADMIN_KEY in env" });
-    }
-    if (provided !== expected) {
-      return res.status(401).json({ ok: false, error: "Unauthorized (bad key)" });
-    }
+  return res.status(200).json({
+    ok: true,
+    marker: "NEW_CODE_RUNNING"
+  });
+}
 
     // 2) Supabase server-side credentials
     const supabaseUrl =
