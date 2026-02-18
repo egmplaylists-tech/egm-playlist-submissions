@@ -1,9 +1,14 @@
 export default async function handler(req, res) {
-  return res.status(200).json({
-    ok: true,
-    marker: "NEW_CODE_RUNNING"
-  });
-}
+  try {
+    // 1) Security check
+    const provided = String(req.query.key || "");
+    const expected = String(process.env.ADMIN_KEY || "");
+    if (!expected) {
+      return res.status(500).json({ ok: false, error: "Missing ADMIN_KEY in env" });
+    }
+    if (provided !== expected) {
+      return res.status(401).json({ ok: false, error: "Unauthorized (bad key)" });
+    }
 
     // 2) Supabase server-side credentials
     const supabaseUrl =
@@ -23,68 +28,41 @@ export default async function handler(req, res) {
       return res.status(500).json({
         ok: false,
         error:
-          "Missing service key env. Set SUPABASE_SERVICE_ROLE_KEY (preferred) or SUPABASE_SERVICE_KEY in Vercel (Production).",
+          "Missing service key env. Set SUPABASE_SERVICE_ROLE_KEY (preferred) or SUPABASE_SERVICE_KEY in Vercel.",
       });
     }
 
-    // 3) TODO: hier hoort jouw echte berekening te staan.
-    // Voor nu: als je al 14346 hebt, zet dit tijdelijk hard om te bewijzen dat schrijven werkt.
-    // Daarna zetten we de Spotify fetch terug goed.
+    // 3) Zet je gewenste waarde (tijdelijk hard-coded om te bewijzen dat schrijven werkt)
     const total_followers = 14346;
 
-// 4) Update playlist_stats (id=1)  — geen insert/upsert, want id is GENERATED ALWAYS
-const updateUrl =
-  supabaseUrl.replace(/\/$/, "") +
-  "/rest/v1/playlist_stats?id=eq.1";
+    // 4) ✅ UPDATE/PATCH de bestaande rij (id=1)
+    // GEEN id in payload! (want id is GENERATED ALWAYS)
+    const patchUrl =
+      supabaseUrl.replace(/\/$/, "") +
+      "/rest/v1/playlist_stats?id=eq.1";
 
-const payload = {
-  total_followers,
-  updated_at: new Date().toISOString(),
-};
+    const payload = {
+      total_followers,
+      updated_at: new Date().toISOString(),
+    };
 
-const r = await fetch(updateUrl, {
-  method: "PATCH",
-  headers: {
-    apikey: serviceKey,
-    authorization: `Bearer ${serviceKey}`,
-    "Content-Type": "application/json",
-    Prefer: "return=representation",
-  },
-  body: JSON.stringify(payload),
-});
-
-const text = await r.text();
-if (!r.ok) {
-  return res.status(500).json({
-    ok: false,
-    where: "supabase-update",
-    status: r.status,
-    body: text || "(empty)",
-  });
-}
-
-return res.status(200).json({
-  ok: true,
-  updated_row: JSON.parse(text || "[]"),
-});
-
-
-    const r = await fetch(upsertUrl, {
-      method: "POST",
+    const r = await fetch(patchUrl, {
+      method: "PATCH",
       headers: {
         apikey: serviceKey,
         authorization: `Bearer ${serviceKey}`,
         "Content-Type": "application/json",
-        Prefer: "resolution=merge-duplicates,return=representation",
+        Prefer: "return=representation",
       },
       body: JSON.stringify(payload),
     });
 
-    const text = await r.text(); // Supabase geeft soms lege body terug
+    const text = await r.text();
+
     if (!r.ok) {
       return res.status(500).json({
         ok: false,
-        where: "supabase-upsert",
+        where: "supabase-patch",
         status: r.status,
         body: text || "(empty)",
       });
@@ -92,6 +70,7 @@ return res.status(200).json({
 
     return res.status(200).json({
       ok: true,
+      updatedRow: "id=1",
       wrote: payload,
       supabaseStatus: r.status,
       supabaseBody: text || "(empty)",
