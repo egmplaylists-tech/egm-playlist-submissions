@@ -1,8 +1,8 @@
 {
   "crons": [
     {
-      "path": "/api/cron/update-followers",
-      "schedule": "0 6 * * *"
+      "path": "/api/cron/update-followers?secret=k9F7xPq2Lm8VtR4aZ6uWc1JbN3eY5QhD0sG",
+      "schedule": "0 4 * * *"
     }
   ]
 }
