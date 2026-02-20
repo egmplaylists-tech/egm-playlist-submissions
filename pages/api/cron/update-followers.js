@@ -14,6 +14,30 @@ function extractPlaylistId(input) {
   return null;
 }
 
+function getProvidedKey(req) {
+  // Accept either query key or header key
+  const raw =
+    (req.query && req.query.key) ||
+    req.headers["x-admin-key"] ||
+    "";
+
+  // Important: decode URL encoding safely.
+  // If someone uses + in URL, it may arrive as space; try to recover.
+  let s = String(raw).trim();
+
+  // recover common case where '+' became ' '
+  if (s.includes(" ")) s = s.replace(/ /g, "+");
+
+  try {
+    // decode only if it looks encoded (contains %)
+    if (s.includes("%")) s = decodeURIComponent(s);
+  } catch (_) {
+    // ignore decode errors
+  }
+
+  return s.trim();
+}
+
 async function getSpotifyAccessToken() {
   const clientId = process.env.SPOTIFY_CLIENT_ID;
   const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
@@ -22,17 +46,15 @@ async function getSpotifyAccessToken() {
     throw new Error("Missing SPOTIFY_CLIENT_ID or SPOTIFY_CLIENT_SECRET in Vercel env");
   }
 
-  const body = new URLSearchParams();
-  body.set("grant_type", "client_credentials");
+  const basic = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
 
   const r = await fetch("https://accounts.spotify.com/api/token", {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
-      Authorization:
-        "Basic " + Buffer.from(`${clientId}:${clientSecret}`).toString("base64"),
+      Authorization: `Basic ${basic}`,
     },
-    body: body.toString(),
+    body: new URLSearchParams({ grant_type: "client_credentials" }).toString(),
   });
 
   const j = await r.json().catch(() => ({}));
@@ -44,35 +66,30 @@ async function getSpotifyAccessToken() {
 
 export default async function handler(req, res) {
   try {
-// 1) Security check (query OR header, trimmed)
-const provided =
-  String(req.query.key || req.headers["x-admin-key"] || "").trim();
+    // Allow GET (manual test) and allow cron calls
+    if (req.method !== "GET") {
+      return res.status(405).json({ ok: false, error: "Method Not Allowed" });
+    }
 
-const expected = String(process.env.ADMIN_KEY || "").trim();
-
-if (!expected) {
-  return res.status(500).json({ ok: false, error: "Missing ADMIN_KEY in env" });
-}
-if (provided !== expected) {
-  return res.status(401).json({ ok: false, error: "Unauthorized (bad key)" });
-}
+    // 1) Security check
+    const expected = String(process.env.ADMIN_KEY || "").trim();
     if (!expected) {
       return res.status(500).json({ ok: false, error: "Missing ADMIN_KEY in env" });
     }
+
+    const provided = getProvidedKey(req);
     if (provided !== expected) {
       return res.status(401).json({ ok: false, error: "Unauthorized (bad key)" });
     }
 
     // 2) Supabase server-side credentials
     const supabaseUrl =
-      process.env.NEXT_PUBLIC_SUPABASE_URL ||
-      process.env.SUPABASE_URL ||
-      "";
+      (process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "").trim();
 
     const serviceKey =
-      process.env.SUPABASE_SERVICE_ROLE_KEY ||
-      process.env.SUPABASE_SERVICE_KEY ||
-      "";
+      (process.env.SUPABASE_SERVICE_ROLE_KEY ||
+        process.env.SUPABASE_SERVICE_KEY ||
+        "").trim();
 
     if (!supabaseUrl) {
       return res.status(500).json({ ok: false, error: "Missing SUPABASE URL env" });
@@ -117,7 +134,6 @@ if (provided !== expected) {
       list = cfg.playlists;
     }
 
-    // Extract + de-dupe IDs
     const ids = list
       .map((p) => extractPlaylistId(p?.id))
       .filter(Boolean);
@@ -125,6 +141,22 @@ if (provided !== expected) {
     const uniqueIds = Array.from(new Set(ids));
 
     if (!uniqueIds.length) {
+      // Still update stats to 0 to show it ran
+      const payload0 = { total_followers: 0, updated_at: new Date().toISOString() };
+      await fetch(
+        supabaseUrl.replace(/\/$/, "") + "/rest/v1/playlist_stats?id=eq.1",
+        {
+          method: "PATCH",
+          headers: {
+            apikey: serviceKey,
+            authorization: `Bearer ${serviceKey}`,
+            "Content-Type": "application/json",
+            Prefer: "return=representation",
+          },
+          body: JSON.stringify(payload0),
+        }
+      );
+
       return res.status(200).json({
         ok: true,
         note: "No playlists found in config",
@@ -140,8 +172,8 @@ if (provided !== expected) {
     let okCount = 0;
     let failCount = 0;
 
-    // Gentle parallelism
     const concurrency = 6;
+
     for (let i = 0; i < uniqueIds.length; i += concurrency) {
       const chunk = uniqueIds.slice(i, i + concurrency);
 
@@ -153,7 +185,9 @@ if (provided !== expected) {
           );
           const j = await r.json().catch(() => ({}));
           if (!r.ok) {
-            throw new Error(`Spotify playlist ${id} failed: ${r.status} ${JSON.stringify(j)}`);
+            throw new Error(
+              `Spotify playlist ${id} failed: ${r.status} ${JSON.stringify(j)}`
+            );
           }
           return Number(j?.followers?.total || 0);
         })
@@ -169,10 +203,9 @@ if (provided !== expected) {
       }
     }
 
-    // 6) ✅ PATCH playlist_stats row id=1 (NO id in payload)
+    // 6) PATCH playlist_stats row id=1
     const patchUrl =
-      supabaseUrl.replace(/\/$/, "") +
-      "/rest/v1/playlist_stats?id=eq.1";
+      supabaseUrl.replace(/\/$/, "") + "/rest/v1/playlist_stats?id=eq.1";
 
     const payload = {
       total_followers: total,
@@ -207,7 +240,6 @@ if (provided !== expected) {
       fetched_failed: failCount,
       total_followers: total,
       wrote: payload,
-      supabaseBody: patchText || "(empty)",
     });
   } catch (e) {
     return res.status(500).json({
