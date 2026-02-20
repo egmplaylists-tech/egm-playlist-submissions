@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 
-// ... (jouw andere helpers zoals normalizePlaylists blijven staan)
-
 export default function SubmitPage() {
   const [playlists, setPlaylists] = useState([]);
 
@@ -14,8 +12,7 @@ export default function SubmitPage() {
         const j = await r.json();
 
         if (j?.ok && Array.isArray(j.playlists) && j.playlists.length) {
-          const normalized = normalizePlaylists(j.playlists);
-          if (!cancelled && normalized.length) setPlaylists(normalized);
+          if (!cancelled) setPlaylists(j.playlists);
         }
       } catch (e) {
         console.error("Failed to load playlists:", e);
@@ -29,6 +26,10 @@ export default function SubmitPage() {
     };
   }, []);
 
-  // ... hier komt de rest van jouw pagina die playlists gebruikt
-  // return (...)
+  return (
+    <main style={{ padding: 24 }}>
+      <h1>Submit</h1>
+      <p>Playlists loaded: {playlists.length}</p>
+    </main>
+  );
 }
