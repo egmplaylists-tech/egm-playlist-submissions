@@ -44,13 +44,17 @@ export default async function handler(req, res) {
       return res.status(401).json({ ok: false, error: "Unauthorized" });
     }
 
-    // Lees config uit app_config
-    const { data: row, error: readErr } = await supabase
-      .from("app_config")
-      .select("config")
-      .eq("id", 1)
-      .single();
-    if (readErr) throw readErr;
+// Lees config uit app_config
+const { data: rows, error: readErr } = await supabase
+  .from("app_config")
+  .select("config")
+  .eq("id", 1)
+  .limit(1);
+
+if (readErr) throw readErr;
+
+const row = rows?.[0];
+if (!row) throw new Error("No app_config row found for id=1");
 
     const config = row?.config || {};
 
