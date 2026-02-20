@@ -44,9 +44,18 @@ async function getSpotifyAccessToken() {
 
 export default async function handler(req, res) {
   try {
-    // 1) Security check
-    const provided = String(req.query.key || "");
-    const expected = String(process.env.ADMIN_KEY || "");
+// 1) Security check (query OR header, trimmed)
+const provided =
+  String(req.query.key || req.headers["x-admin-key"] || "").trim();
+
+const expected = String(process.env.ADMIN_KEY || "").trim();
+
+if (!expected) {
+  return res.status(500).json({ ok: false, error: "Missing ADMIN_KEY in env" });
+}
+if (provided !== expected) {
+  return res.status(401).json({ ok: false, error: "Unauthorized (bad key)" });
+}
     if (!expected) {
       return res.status(500).json({ ok: false, error: "Missing ADMIN_KEY in env" });
     }
