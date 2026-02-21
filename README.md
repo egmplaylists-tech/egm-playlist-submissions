@@ -1,3 +1,4 @@
+test deploy
 # EGM Playlist Submissions (Vercel + Supabase + Spotify)
 
 ## Environment Variables (Vercel -> Settings -> Environment Variables)
