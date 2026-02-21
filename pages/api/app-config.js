@@ -72,10 +72,8 @@ export default async function handler(req, res) {
 return res.status(200).json({
   ok: true,
   origin,
-
-  // 👉 dit is de enige nieuwe regel die ontbrak
+  api_version: "APP_CONFIG_MARKER_2026-02-21_1",
   total_followers: cfg.total_followers ?? null,
-
   playlistsCount: flat.length,
   hasPlaylistGroups: Array.isArray(cfg.playlist_groups),
   debug_marker_submit: cfg.debug_marker_submit || null,
