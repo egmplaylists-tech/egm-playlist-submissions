@@ -69,15 +69,19 @@ export default async function handler(req, res) {
         .json({ ok: false, where: "supabase-query", error: error.message, origin });
     }
 
-    const cfg = data?.config || {};
-    const groups = Array.isArray(cfg.playlist_groups) ? cfg.playlist_groups : [];
-    const flat = groups.flatMap((g) =>
-      Array.isArray(g?.playlists) ? g.playlists : []
-    );
+return res.status(200).json({
+  ok: true,
+  origin,
 
-    return res.status(200).json({
-      ok: true,
-      origin,
+  // 👉 dit is de enige nieuwe regel die ontbrak
+  total_followers: cfg.total_followers ?? null,
+
+  playlistsCount: flat.length,
+  hasPlaylistGroups: Array.isArray(cfg.playlist_groups),
+  debug_marker_submit: cfg.debug_marker_submit || null,
+  updated_at_marker: cfg.updated_at_marker || null,
+  playlists: flat,
+});
 
       // ✅ NEW: expose followers + marker from config
       total_followers: cfg.total_followers ?? null,
