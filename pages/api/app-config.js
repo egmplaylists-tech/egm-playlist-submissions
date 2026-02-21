@@ -1,5 +1,6 @@
 // pages/api/app-config.js
 // BUILD_PING 2026-02-21 1
+// PING_DEPLOY_2026_02_21
 import { createClient } from "@supabase/supabase-js";
 
 export default async function handler(req, res) {
