@@ -13,10 +13,14 @@ export default async function handler(req, res) {
 
     // 1) env checks
     if (!rawUrl) {
-      return res.status(500).json({ ok: false, where: "env", error: "Missing SUPABASE URL" });
+      return res
+        .status(500)
+        .json({ ok: false, where: "env", error: "Missing SUPABASE URL" });
     }
     if (!serviceKey) {
-      return res.status(500).json({ ok: false, where: "env", error: "Missing SERVICE ROLE KEY" });
+      return res
+        .status(500)
+        .json({ ok: false, where: "env", error: "Missing SERVICE ROLE KEY" });
     }
 
     // 2) URL sanitizing check (catches newline/space)
@@ -48,7 +52,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // 4) Supabase query test
+    // 4) Supabase query
     const supabase = createClient(origin, serviceKey, {
       auth: { persistSession: false },
     });
@@ -60,7 +64,9 @@ export default async function handler(req, res) {
       .maybeSingle();
 
     if (error) {
-      return res.status(500).json({ ok: false, where: "supabase-query", error: error.message, origin });
+      return res
+        .status(500)
+        .json({ ok: false, where: "supabase-query", error: error.message, origin });
     }
 
     const cfg = data?.config || {};
@@ -72,10 +78,14 @@ export default async function handler(req, res) {
     return res.status(200).json({
       ok: true,
       origin,
+
+      // ✅ NEW: expose followers + marker from config
+      total_followers: cfg.total_followers ?? null,
+      updated_at_marker: cfg.updated_at_marker ?? null,
+
       playlistsCount: flat.length,
       hasPlaylistGroups: Array.isArray(cfg.playlist_groups),
       debug_marker_submit: cfg.debug_marker_submit || null,
-      updated_at_marker: cfg.updated_at_marker || null,
       playlists: flat,
     });
   } catch (e) {
@@ -86,4 +96,3 @@ export default async function handler(req, res) {
     });
   }
 }
-
