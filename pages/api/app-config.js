@@ -66,24 +66,28 @@ export default async function handler(req, res) {
       .maybeSingle();
 
     if (error) {
-      return res
-        .status(500)
-        .json({ ok: false, where: "supabase-query", error: error.message, origin });
+      return res.status(500).json({
+        ok: false,
+        where: "supabase-query",
+        error: error.message,
+        origin,
+      });
     }
 
-return res.status(200).json({
-  ok: true,
-  origin,
-  api_version: "APP_CONFIG_MARKER_2026-02-21_1",
-  total_followers: cfg.total_followers ?? null,
-  playlistsCount: flat.length,
-  hasPlaylistGroups: Array.isArray(cfg.playlist_groups),
-  debug_marker_submit: cfg.debug_marker_submit || null,
-  updated_at_marker: cfg.updated_at_marker || null,
-  playlists: flat,
-});
+    // 5) Parse config safely
+    const cfg = data?.config || {};
+    const groups = Array.isArray(cfg.playlist_groups) ? cfg.playlist_groups : [];
+    const flat = groups.flatMap((g) =>
+      Array.isArray(g?.playlists) ? g.playlists : []
+    );
 
-      // ✅ NEW: expose followers + marker from config
+    // 6) Return payload
+    return res.status(200).json({
+      ok: true,
+      origin,
+      api_version: "APP_CONFIG_MARKER_2026-02-21_1",
+
+      // ✅ expose followers + marker from config
       total_followers: cfg.total_followers ?? null,
       updated_at_marker: cfg.updated_at_marker ?? null,
 
