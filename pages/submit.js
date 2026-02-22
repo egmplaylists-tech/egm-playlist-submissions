@@ -108,7 +108,7 @@ const styles = {
 const WINTERBLUES_TRACK_ID = "3DcFlTECTsuj97qBBssomN";
 
 // TODO: set your ACTUAL artist id (open.spotify.com/artist/<THIS>)
-const EGM_ARTIST_ID = ""; // <-- FILL THIS IN
+const EGM_ARTIST_ID = "1EKGn7PcgUA19OXlhZ7xgS"; // <-- FILL THIS IN
 
 function getArtistIdFromSpotifyUrl(url) {
   // expects https://open.spotify.com/artist/<id>...
