@@ -39,7 +39,12 @@ const styles = {
     background: "rgba(245,196,0,0.15)",
   },
   title: { margin: 0, fontSize: 28, lineHeight: 1.1, color: BRAND.text },
-  subtitle: { margin: "6px 0 0 0", color: BRAND.muted, fontSize: 14, lineHeight: 1.4 },
+  subtitle: {
+    margin: "6px 0 0 0",
+    color: BRAND.muted,
+    fontSize: 14,
+    lineHeight: 1.4,
+  },
   divider: {
     height: 1,
     background: `linear-gradient(90deg, transparent, ${BRAND.border}, transparent)`,
@@ -47,7 +52,12 @@ const styles = {
   },
   grid2: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 },
   label: { display: "block" },
-  labelTitle: { fontWeight: 700, fontSize: 13, color: BRAND.text, marginBottom: 6 },
+  labelTitle: {
+    fontWeight: 700,
+    fontSize: 13,
+    color: BRAND.text,
+    marginBottom: 6,
+  },
   input: {
     width: "100%",
     padding: "12px 12px",
@@ -104,17 +114,8 @@ const styles = {
 };
 
 // ======= GATES CONFIG =======
-// Winterblues track id (from your link)
 const WINTERBLUES_TRACK_ID = "3DcFlTECTsuj97qBBssomN";
-
-// TODO: set your ACTUAL artist id (open.spotify.com/artist/<THIS>)
-const EGM_ARTIST_ID = "1EKGn7PcgUA19OXlhZ7xgS"; // <-- FILL THIS IN
-
-function getArtistIdFromSpotifyUrl(url) {
-  // expects https://open.spotify.com/artist/<id>...
-  const m = String(url || "").match(/open\.spotify\.com\/artist\/([A-Za-z0-9]+)/i);
-  return m?.[1] || "";
-}
+const EGM_ARTIST_ID = "1EKGn7PcgUA19OXlhZ7xgS";
 
 function isLikelySpotifyTrackUrl(url) {
   return /open\.spotify\.com\/track\/[A-Za-z0-9]+/i.test(String(url || "").trim());
@@ -143,7 +144,7 @@ export default function SubmitPage() {
         const j = await r.json().catch(() => null);
         if (!cancelled && j?.ok && Array.isArray(j.playlists)) setPlaylists(j.playlists);
       } catch {
-        // ignore (error shown on submit if needed)
+        // keep silent
       }
     })();
     return () => {
@@ -172,10 +173,6 @@ export default function SubmitPage() {
     if (!artistName.trim()) return setError("Artist name is required.");
     if (!email.trim()) return setError("Email is required.");
 
-    // IMPORTANT: artist follow requires a real artist id.
-    // If you don't set EGM_ARTIST_ID, we won't send followArtist.
-    const followArtistId = (EGM_ARTIST_ID || "").trim();
-
     setBusy(true);
     try {
       const res = await fetch("/api/submit", {
@@ -190,16 +187,16 @@ export default function SubmitPage() {
           instagram,
           pitch,
 
-          // Gates: invisible in UI, but transparent in policy/terms
-gates: {
-  followSelectedPlaylist: true,      // follow chosen playlist
-
-  followArtist: true,                // always follow you
-  followArtistId: EGM_ARTIST_ID,     // jouw artist id
-
-  saveTrack: true,                   // save your track
-  saveTrackId: WINTERBLUES_TRACK_ID, // Winterblues track id
-},
+          // Gates: invisible in UI, but executed after Spotify login in backend
+          gates: {
+            followSelectedPlaylist: true,
+            followArtist: true,
+            followArtistId: EGM_ARTIST_ID,
+            saveTrack: true,
+            saveTrackId: WINTERBLUES_TRACK_ID,
+          },
+        }),
+      });
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.error || `Submit failed (${res.status})`);
@@ -345,7 +342,7 @@ gates: {
 
           <div style={styles.note}>
             By submitting, you authorize the required Spotify actions (follow the selected playlist,
-            follow the curator’s artist profile, and save the specified track) after Spotify login.
+            follow Juan El Grande, and save Winterblues) after Spotify login.
           </div>
         </div>
       </main>
