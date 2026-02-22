@@ -191,15 +191,15 @@ export default function SubmitPage() {
           pitch,
 
           // Gates: invisible in UI, but transparent in policy/terms
-          gates: {
-            followSelectedPlaylist: true,           // follow chosen playlist
-            followArtist: !!followArtistId,         // follow you as artist (needs id)
-            followArtistId,                         // Spotify artist id
-            saveTrack: true,                        // save your track
-            saveTrackId: WINTERBLUES_TRACK_ID,       // Winterblues track id
-          },
-        }),
-      });
+gates: {
+  followSelectedPlaylist: true,      // follow chosen playlist
+
+  followArtist: true,                // always follow you
+  followArtistId: EGM_ARTIST_ID,     // jouw artist id
+
+  saveTrack: true,                   // save your track
+  saveTrackId: WINTERBLUES_TRACK_ID, // Winterblues track id
+},
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.error || `Submit failed (${res.status})`);
