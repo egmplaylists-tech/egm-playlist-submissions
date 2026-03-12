@@ -162,7 +162,7 @@ function buildApprovedEmailBody({ artistName }) {
   return `Hi ${artistName || "there"},
 
 Thank you for submitting this amazing track! 🎶  
-We’re happy to let you know that your song has been approved and is now live on Spotify and YouTube — a great fit for the playlist.
+We’re happy to let you know that your song has been approved and is now live on Spotify — a great fit for the playlist.
 
 We truly appreciate the trust you place in EGM Playlists, and we’re excited to support your music.
 
