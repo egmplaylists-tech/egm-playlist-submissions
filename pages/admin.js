@@ -161,63 +161,62 @@ function encodeMailto(text) {
 function buildApprovedEmailBody({ artistName }) {
   return `Hi ${artistName || "there"},
 
-Thank you for submitting this amazing track! 🎶  
-We’re happy to let you know that your song has been approved and is now live on Spotify — a great fit for the playlist.
+Thank you for submitting your track 🎶  
 
-We truly appreciate the trust you place in EGM Playlists, and we’re excited to support your music.
+We’re happy to let you know that your song has been approved and is now live on Spotify.  
 
-💖 Show some love
-Sharing really helps independent artists grow.
-Feel free to share the playlist with friends, family, and even your local gym — the more people listening, the more your music gets streamed.
+We truly appreciate your trust in EGM Playlists and are proud to support your music.
 
-✨ Free promotion opportunities
-You’re welcome to promote your music for free in our Facebook group:
-https://www.facebook.com/groups/elgrandemusiceu
+🎧 Want to take your promotion further?  
+Discover all opportunities via Daily Music Press:  
+👉 https://www.dailymusicpress.com  
 
-🙌 Want to say thanks?
-Support us by following and connecting on our social platforms — let’s grow together!
+On the platform, you can explore options such as:  
+• Playlist consideration (EGM Playlists)  
+• Press releases  
+• Artist features  
+• Single cover features  
+• Release reviews  
 
-YouTube: https://www.youtube.com/@juanelgrande/playlists
-Instagram: https://www.instagram.com/elgrandemusic_eu/
-Facebook: https://www.facebook.com/JuanElGrandeFans
-Bluesky: https://bsky.app/profile/juanelgrandemusic.bsky.social
-SoundCloud: https://soundcloud.com/juanelgrandemusic
+✨ Free promotion  
+You’re also welcome to share your music in our community:  
+👉 https://www.facebook.com/groups/elgrandemusiceu  
 
-🎧 Discover more playlists
-https://www.egmplaylists.eu
+Thanks again for being part of EGM Playlists — real support for real artists.
 
-Best regards,
-EGM Playlists
-Curated by real people — powered by passion`;
+Best regards,  
+EGM Playlists  
+Curated by real people — powered by passion;
 }
 function buildRejectedEmailBody({ artistName }) {
   return `Hi ${artistName || "there"},
 
-Thank you for submitting your track to EGM Playlists and for giving us the opportunity to listen to your release.
+Thank you for submitting your track to EGM Playlists 🎶  
 
-After careful consideration, we’ve decided not to include this track in our playlists at this moment. This decision is never personal — our selections depend on many factors such as playlist direction, current mood, timing, and overall flow.
+After careful consideration, we’ve decided not to include this release in our playlists at this time.  
+This decision is never personal — it simply comes down to playlist fit, timing, and overall flow.
 
-🎧 Please note
-- Every submission is manually reviewed
-- Not being selected now does not affect future submissions
-- You are always welcome to submit new or upcoming releases
+We truly appreciate you sharing your music with us, and you’re always welcome to submit future releases.
 
-✨ Free promotion opportunities
-You’re welcome to promote your music for free in our Facebook group:
-https://www.facebook.com/groups/elgrandemusiceu
+🎧 Want to explore more promotion opportunities?  
+Discover everything via Daily Music Press:  
+👉 https://www.dailymusicpress.com  
 
-🙌 Stay connected
-YouTube: https://www.youtube.com/@juanelgrande/playlists
-Instagram: https://www.instagram.com/elgrandemusic_eu/
-Facebook: https://www.facebook.com/JuanElGrandeFans
-Bluesky: https://bsky.app/profile/juanelgrandemusiceu.bsky.social
-SoundCloud: https://soundcloud.com/juanelgrandemusic
+On the platform, you can take your promotion further with options such as:  
+• Playlist consideration (EGM Playlists)  
+• Press releases  
+• Artist features  
+• Single cover features  
+• Release reviews  
 
-🎧 Discover more playlists
-https://www.egmplaylists.eu
+✨ Free promotion  
+You’re also welcome to share your music in our community:  
+👉 https://www.facebook.com/groups/elgrandemusiceu  
 
-Kind regards,
-EGM Playlists
+Thanks again for your submission — real support for real artists.
+
+Kind regards,  
+EGM Playlists  
 Curated by real people — powered by passion`;
 }
 
