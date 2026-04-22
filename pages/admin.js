@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
 const BRAND = {
-  // Zachter dan hard wit: licht blauw-grijs (oogvriendelijk)
   bg: "#F4F7FB",
   card: "#FFFFFF",
   text: "#1F2A33",
@@ -31,7 +30,12 @@ const styles = {
   },
   h1: { margin: 0, fontSize: 34, letterSpacing: -0.5 },
   sub: { marginTop: 6, color: BRAND.muted },
-  rightTools: { display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" },
+  rightTools: {
+    display: "flex",
+    gap: 10,
+    alignItems: "center",
+    flexWrap: "wrap",
+  },
   input: {
     padding: "10px 12px",
     borderRadius: 12,
@@ -108,7 +112,6 @@ const styles = {
     fontSize: 12,
     color: BRAND.text,
   },
-  // Compacte acties
   actions: {
     display: "flex",
     gap: 8,
@@ -144,91 +147,88 @@ const styles = {
   },
 };
 
-// localStorage helpers
 function getLS(key, fallback = "") {
   if (typeof window === "undefined") return fallback;
   return localStorage.getItem(key) || fallback;
 }
+
 function setLS(key, value) {
   if (typeof window === "undefined") return;
   localStorage.setItem(key, value);
 }
 
-// mailto helpers
 function encodeMailto(text) {
   return encodeURIComponent(text || "").replace(/%0A/g, "%0D%0A");
 }
+
 function buildApprovedEmailBody({ artistName }) {
   return `Hi ${artistName || "there"},
 
-Thank you for submitting your track 🎶  
+Thank you for submitting your track 🎶
 
-We’re happy to let you know that your song has been approved and is now live on Spotify.  
+We’re happy to let you know that your song has been approved and is now live on Spotify.
 
 We truly appreciate your trust in EGM Playlists and are proud to support your music.
 
-🎧 Want to take your promotion further?  
-Discover all opportunities via Daily Music Press:  
-👉 https://www.dailymusicpress.com  
+🎧 Want to take your promotion further?
+Discover all opportunities via Daily Music Press:
+👉 https://www.dailymusicpress.com
 
-On the platform, you can explore options such as:  
-• Playlist consideration (EGM Playlists)  
-• Press releases  
-• Artist features  
-• Single cover features  
-• Release reviews  
+On the platform, you can explore options such as:
+• Playlist consideration (EGM Playlists)
+• Press releases
+• Artist features
+• Single cover features
+• Release reviews
 
-✨ Free promotion  
-You’re also welcome to share your music in our community:  
-👉 https://www.facebook.com/groups/elgrandemusiceu  
+✨ Free promotion
+You’re also welcome to share your music in our community:
+👉 https://www.facebook.com/groups/elgrandemusiceu
 
 Thanks again for being part of EGM Playlists — real support for real artists.
 
-Best regards,  
-EGM Playlists  
-Curated by real people — powered by passion;
+Best regards,
+EGM Playlists
+Curated by real people — powered by passion`;
 }
+
 function buildRejectedEmailBody({ artistName }) {
   return `Hi ${artistName || "there"},
 
-Thank you for submitting your track to EGM Playlists 🎶  
+Thank you for submitting your track to EGM Playlists 🎶
 
-After careful consideration, we’ve decided not to include this release in our playlists at this time.  
+After careful consideration, we’ve decided not to include this release in our playlists at this time.
 This decision is never personal — it simply comes down to playlist fit, timing, and overall flow.
 
 We truly appreciate you sharing your music with us, and you’re always welcome to submit future releases.
 
-🎧 Want to explore more promotion opportunities?  
-Discover everything via Daily Music Press:  
-👉 https://www.dailymusicpress.com  
+🎧 Want to explore more promotion opportunities?
+Discover everything via Daily Music Press:
+👉 https://www.dailymusicpress.com
 
-On the platform, you can take your promotion further with options such as:  
-• Playlist consideration (EGM Playlists)  
-• Press releases  
-• Artist features  
-• Single cover features  
-• Release reviews  
+On the platform, you can take your promotion further with options such as:
+• Playlist consideration (EGM Playlists)
+• Press releases
+• Artist features
+• Single cover features
+• Release reviews
 
-✨ Free promotion  
-You’re also welcome to share your music in our community:  
-👉 https://www.facebook.com/groups/elgrandemusiceu  
+✨ Free promotion
+You’re also welcome to share your music in our community:
+👉 https://www.facebook.com/groups/elgrandemusiceu
 
 Thanks again for your submission — real support for real artists.
 
-Kind regards,  
-EGM Playlists  
+Kind regards,
+EGM Playlists
 Curated by real people — powered by passion`;
 }
 
-// PROBEER "From" te sturen via mailto params (werkt afhankelijk van mailclient)
-// De échte fix blijft: Outlook standaardaccount = submit@...
 function makeMailto({ to, subject, body, preferredFrom }) {
   const s = encodeURIComponent(subject || "");
   const b = encodeMailto(body || "");
   const base = `mailto:${encodeURIComponent(to || "")}?subject=${s}&body=${b}`;
 
-  // Sommige clients respecteren extra params zoals "from" of "reply-to" niet,
-  // maar het kan helpen in sommige setups.
   const extra = [];
   if (preferredFrom) {
     extra.push(`from=${encodeURIComponent(preferredFrom)}`);
@@ -238,7 +238,6 @@ function makeMailto({ to, subject, body, preferredFrom }) {
   return extra.length ? `${base}&${extra.join("&")}` : base;
 }
 
-// Minimal inline SVG icons (geen dependencies nodig)
 function ThumbsUpIcon({ color = BRAND.green }) {
   return (
     <svg viewBox="0 0 24 24" style={styles.icon} aria-hidden="true">
@@ -249,6 +248,7 @@ function ThumbsUpIcon({ color = BRAND.green }) {
     </svg>
   );
 }
+
 function ThumbsDownIcon({ color = BRAND.red }) {
   return (
     <svg viewBox="0 0 24 24" style={styles.icon} aria-hidden="true">
@@ -259,6 +259,7 @@ function ThumbsDownIcon({ color = BRAND.red }) {
     </svg>
   );
 }
+
 function MailIcon({ color = BRAND.green }) {
   return (
     <svg viewBox="0 0 24 24" style={styles.icon} aria-hidden="true">
@@ -272,7 +273,6 @@ function MailIcon({ color = BRAND.green }) {
 
 export default function Admin() {
   const [adminKey, setAdminKey] = useState("");
-  // ✅ Default startpagina = PENDING
   const [statusFilter, setStatusFilter] = useState("pending");
   const [error, setError] = useState("");
   const [rows, setRows] = useState([]);
@@ -287,6 +287,7 @@ export default function Admin() {
   async function loadSubmissions() {
     setError("");
     setLoading(true);
+
     try {
       const r = await fetch("/api/admin/list", {
         headers: { "x-admin-key": adminKey },
@@ -302,8 +303,9 @@ export default function Admin() {
         : [];
 
       if (j?.ok === false && j?.error) throw new Error(j.error);
-      if (!Array.isArray(data))
+      if (!Array.isArray(data)) {
         throw new Error("Invalid response from /api/admin/list");
+      }
 
       setRows(data);
     } catch (e) {
@@ -316,6 +318,7 @@ export default function Admin() {
 
   async function setStatus(id, status) {
     setError("");
+
     try {
       const r = await fetch("/api/admin/set-status", {
         method: "POST",
@@ -325,8 +328,10 @@ export default function Admin() {
         },
         body: JSON.stringify({ id, status }),
       });
+
       const j = await r.json();
       if (j?.ok === false && j?.error) throw new Error(j.error);
+
       await loadSubmissions();
     } catch (e) {
       setError(String(e?.message || e));
@@ -370,7 +375,13 @@ export default function Admin() {
     );
   }
 
-  function IconLink({ title, href, variant = "neutral", onGuardClick, children }) {
+  function IconLink({
+    title,
+    href,
+    variant = "neutral",
+    onGuardClick,
+    children,
+  }) {
     const base = styles.iconBtn;
     const variantStyle =
       variant === "green"
@@ -406,7 +417,8 @@ export default function Admin() {
         <div>
           <h1 style={styles.h1}>Submissions Inbox</h1>
           <div style={styles.sub}>
-            Review submissions, approve/reject, and email artists manually (free).
+            Review submissions, approve/reject, and email artists manually
+            (free).
           </div>
         </div>
 
@@ -417,6 +429,7 @@ export default function Admin() {
             onChange={(e) => setAdminKey(e.target.value)}
             placeholder="ADMIN_KEY"
           />
+
           <button
             style={styles.btnAccent}
             onClick={() => {
@@ -427,7 +440,6 @@ export default function Admin() {
             Save key
           </button>
 
-          {/* ✅ Default = pending */}
           <select
             style={styles.input}
             value={statusFilter}
@@ -460,9 +472,10 @@ export default function Admin() {
               Showing {filtered.length} of {rows.length}
             </div>
           </div>
+
           <div style={styles.small}>
-            Tip: Email buttons open your mail client. Set Outlook default account to{" "}
-            <b>{preferredFrom}</b> to avoid wrong sender.
+            Tip: Email buttons open your mail client. Set Outlook default account
+            to <b>{preferredFrom}</b> to avoid wrong sender.
           </div>
         </div>
 
@@ -507,8 +520,12 @@ export default function Admin() {
                   const approvedSubject = "Your track is approved and now live 🎶";
                   const rejectedSubject = "Thank you for your submission";
 
-                  const approvedBody = buildApprovedEmailBody({ artistName: artist });
-                  const rejectedBody = buildRejectedEmailBody({ artistName: artist });
+                  const approvedBody = buildApprovedEmailBody({
+                    artistName: artist,
+                  });
+                  const rejectedBody = buildRejectedEmailBody({
+                    artistName: artist,
+                  });
 
                   const mailtoApproved = email
                     ? makeMailto({
@@ -533,7 +550,11 @@ export default function Admin() {
                       <td style={styles.td}>
                         <span style={styles.pill}>{created}</span>
                       </td>
-                      <td style={styles.td}>{r.playlist_name || r.playlist_id || "-"}</td>
+
+                      <td style={styles.td}>
+                        {r.playlist_name || r.playlist_id || "-"}
+                      </td>
+
                       <td style={styles.td}>
                         {trackUrl ? (
                           <a href={trackUrl} target="_blank" rel="noreferrer">
@@ -543,15 +564,14 @@ export default function Admin() {
                           "-"
                         )}
                       </td>
+
                       <td style={styles.td}>{artist || "-"}</td>
                       <td style={styles.td}>{email || "-"}</td>
                       <td style={styles.td}>{r.instagram || "-"}</td>
                       <td style={styles.td}>{r.status || "pending"}</td>
 
-                      {/* ✅ Compacte icon actions */}
                       <td style={styles.td}>
                         <div style={styles.actions}>
-                          {/* Approve */}
                           <IconButton
                             title="Approve"
                             variant="green"
@@ -560,7 +580,6 @@ export default function Admin() {
                             <ThumbsUpIcon />
                           </IconButton>
 
-                          {/* Reject */}
                           <IconButton
                             title="Reject"
                             variant="red"
@@ -569,7 +588,6 @@ export default function Admin() {
                             <ThumbsDownIcon />
                           </IconButton>
 
-                          {/* Email Approved */}
                           <IconLink
                             title="Email (Approved)"
                             variant="green"
@@ -584,7 +602,6 @@ export default function Admin() {
                             <MailIcon color={BRAND.green} />
                           </IconLink>
 
-                          {/* Email Rejected */}
                           <IconLink
                             title="Email (Rejected)"
                             variant="red"
@@ -610,10 +627,12 @@ export default function Admin() {
 
         <div style={styles.tipBox}>
           <div style={styles.small}>
-            <b>Important:</b> This page uses an admin key stored in your browser (localStorage) and checked server-side.
+            <b>Important:</b> This page uses an admin key stored in your browser
+            (localStorage) and checked server-side.
             <br />
-            <b>Mail tip:</b> To always reply from <b>{preferredFrom}</b>, set that account as default in Outlook.
-            Some mail clients ignore the “from/reply-to” mailto parameters.
+            <b>Mail tip:</b> To always reply from <b>{preferredFrom}</b>, set
+            that account as default in Outlook. Some mail clients ignore the
+            “from/reply-to” mailto parameters.
           </div>
         </div>
       </div>
