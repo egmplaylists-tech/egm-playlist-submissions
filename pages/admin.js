@@ -172,7 +172,7 @@ We truly appreciate your trust in EGM Playlists and are proud to support your mu
 
 🎧 Want to take your promotion further?
 Discover all opportunities via Daily Music Press:
-👉 https://www.dailymusicpress.com
+👉 https://www.egmplaylists.com
 
 On the platform, you can explore options such as:
 • Playlist consideration (EGM Playlists)
@@ -204,7 +204,7 @@ We truly appreciate you sharing your music with us, and you’re always welcome 
 
 🎧 Want to explore more promotion opportunities?
 Discover everything via Daily Music Press:
-👉 https://www.dailymusicpress.com
+👉 https://www.egmplaylists.com
 
 On the platform, you can take your promotion further with options such as:
 • Playlist consideration (EGM Playlists)
@@ -639,3 +639,4 @@ export default function Admin() {
     </main>
   );
 }
+
